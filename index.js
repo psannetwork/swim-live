@@ -46,10 +46,32 @@ class SwimLiveScraper {
 
   static exportToCSV(data, filename) {
     const fs = require('fs');
-    const json2csv = require('json2csv').parse;
-    const csvData = json2csv(data);
-    fs.writeFileSync(filename, csvData);
-    console.log(`${filename} へ出力しました。`);
+    const { Parser } = require('json2csv');
+    
+    if (!data || data.length === 0) {
+      console.warn("データが空です。デフォルトのヘッダーのみで出力します。");
+      
+      const defaultFields = [
+        "swimmer_name", "entry_group_name1", "heat", "lane",
+        "game_code", "program_id", "display_program_id", "distance",
+        "race_date", "status_name", "result_time"
+      ];
+      const parser = new Parser({ fields: defaultFields });
+      const csv = parser.parse([]);
+      
+      fs.writeFileSync(filename, csv);
+      console.log(`${filename} へ空のCSVを出力しました。`);
+      return;
+    }
+
+    try {
+      const parser = new Parser();
+      const csv = parser.parse(data);
+      fs.writeFileSync(filename, csv);
+      console.log(`${filename} へ出力しました。`);
+    } catch (err) {
+      console.error("CSV出力中にエラー:", err.message);
+    }
   }
 }
 
