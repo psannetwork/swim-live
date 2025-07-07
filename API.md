@@ -1,5 +1,4 @@
-以下に、提供された情報をもとに **「live-results.swim.or.jp」API のドキュメント** を作成しました。  
-このドキュメントでは、APIの目的、エンドポイント構造、リクエスト例・レスポンス構造をわかりやすく整理しています。
+もちろんです。以下に、**既存の API ドキュメントに新たなエンドポイント `/api/race_heats/searchedRaceHeats/{game_code}?playerName={}&belongName={}&eventName={}`** を追加した **完全なドキュメント** を記載します。
 
 ---
 
@@ -13,7 +12,7 @@
 本システムは、日本の水泳大会で使用される公式ライブスコア・レース結果配信システムです。  
 選手情報、ヒート情報、タイム結果、ラップタイム、反応時間などをJSON形式で取得できます。
 
-- URL: https://live-results.swim.or.jp/
+- URL: https://live-results.swim.or.jp/  
 - 提供形態: REST API + JSON
 - 対象者: 大会運営者、コーチ、観客、開発者など
 
@@ -158,6 +157,121 @@ GET /api/result/race?game_code=3824703&program_id=8&heat=10&raceStatus=9
 
 ---
 
+### 🔸 新規追加エンドポイント ⑥  
+## `/api/race_heats/searchedRaceHeats/{game_code}?playerName={}&belongName={}&eventName={}`
+
+---
+
+### ✅ 目的:
+選手名、所属名、種目名から検索し、該当する**出場予定・過去のヒート情報**を取得します。
+
+---
+
+### 📌 メソッド:
+```http
+GET
+```
+
+---
+
+### 🧩 パラメータ:
+
+| パラメータ名 | 必須 | 説明 |
+|--------------|------|------|
+| `game_code` | 必須 | 大会の一意のコード（例: `3824703`） |
+| `playerName` | 任意 | 選手名（例: `吉田花子`） |
+| `belongName` | 任意 | 所属名（例: `XXXXXクラブ`） |
+| `eventName` | 任意 | 種目名（例: `個人メドレー`） |
+
+---
+
+### 📌 使用例:
+
+#### 例1：選手名のみで検索
+```bash
+GET /api/race_heats/searchedRaceHeats/3824703?playerName=%E4%B8%AD%E5%B7%9D%E3%80%80%E5%BD%A9%E6%98%A0
+```
+
+> 注：日本語文字列はURLエンコードされています。
+
+---
+
+### 📦 レスポンス構造:
+
+```json
+[
+  {
+    "swimmer_name": "吉田花子",
+    "entry_group_name1": "XXXXXクラブ",
+    "entry_group_name2": null,
+    "entry_group_name3": null,
+    "heat": 1,
+    "lane": 4,
+    "game_code": "3824703",
+    "program_id": "7",
+    "display_program_id": "1",
+    "swimming_style_code": "5",
+    "swimming_style_name": "個人メドレー",
+    "distance": "200",
+    "distance_name": "200m",
+    "race_division_name": "タイム決勝",
+    "gender_code": "2",
+    "gender_name": "女子",
+    "class_name": "無差別",
+    "game_time": null,
+    "race_date": "2025-07-07",
+    "race_status": "9"
+  },
+  ...
+]
+```
+
+---
+
+### 🧭 各フィールドの説明:
+
+| フィールド名 | 型 | 説明 |
+|--------------|----|------|
+| `swimmer_name` | string | 選手名 |
+| `entry_group_name*` | string/null | 所属団体名（複数あり） |
+| `heat` | integer | ヒート番号 |
+| `lane` | integer | 使用レーン |
+| `game_code` | string | 大会の一意な識別子 |
+| `program_id` | string | 内部種目ID |
+| `display_program_id` | string | 表示用種目ID |
+| `swimming_style_code` | integer | 泳法コード（1: 自由形、2: 背泳ぎ、5: 個人メドレーなど） |
+| `swimming_style_name` | string | 泳法の日本語名称 |
+| `distance` | string | 距離（m） |
+| `distance_name` | string | 表示用距離名（例："50m"） |
+| `race_division_name` | string | レース区分（例："タイム決勝"など） |
+| `gender_code` | integer | 性別のコード（1: 男子、2: 女子） |
+| `gender_name` | string | 性別の日本語名称 |
+| `class_name` | string | クラス名（例："無差別"など） |
+| `game_time` | float/null | 記録（タイム）が入る。未記録時は`null` |
+| `race_date` | date (YYYY-MM-DD) | レース開催日 |
+| `race_status` | integer | レースのステータス（例：0=未実施、9=結果確定など） |
+
+---
+
+### 🧩 利用ユースケース:
+
+| シナリオ | 説明 |
+|----------|------|
+| 🔍 選手の過去履歴照会 | 特定選手が出場した大会・種目を一括表示 |
+| 📆 出場予定確認 | 選手が今後の大会でどの種目に登録されているかを確認 |
+| 📊 所属チームの出場選手リスト | `belongName` で絞り込み、チーム全体の出場種目を一覧表示 |
+| 📋 種目別出場選手一覧 | `eventName` で絞り込み、特定種目の出場者を抽出 |
+
+---
+
+### 🛑 注意点:
+
+- **文字エンコード必須**: 日本語の選手名・所属名は**UTF-8 URLエンコード**が必要。
+- **部分一致検索不可**: 完全一致での検索になるため、曖昧検索には対応していない。
+- **null値の扱い**: 所属名2・3は空の場合があり、nullで返却される。
+
+---
+
 ## 4. 公開設定（publishing_setting）
 
 | 設定項目 | 内容 |
@@ -212,6 +326,7 @@ GET /api/result/race?game_code=3824703&program_id=8&heat=10&raceStatus=9
 - CSVやExcel形式の自動出力機能
 - データビジュアル化ダッシュボード
 - LINEやSlack通知連携
+- モバイルアプリSDK提供（iOS/Android）
 
 ---
 
@@ -219,4 +334,8 @@ GET /api/result/race?game_code=3824703&program_id=8&heat=10&raceStatus=9
 
 このドキュメントは、**競技水泳のライブ配信API** に関する基礎知識と利用方法を網羅したものです。  
 
----
+特に新たに追加された `/api/race_heats/searchedRaceHeats/{game_code}?playerName={}&belongName={}&eventName={}` は、選手・所属・種目名からヒート情報を検索可能にする強力なエンドポイントです。
+
+今後の統合やアプリケーション開発において、活用いただけることを願っています！
+
+--- 
