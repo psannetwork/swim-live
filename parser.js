@@ -1,15 +1,38 @@
 function parseRaceResults(data) {
   return data.map(entry => ({
-    rank: entry.rank,
-    name: entry.swimmer_name,
-    team: entry.entry_group_name1,
-    time: entry.result_time,
-    reactionTime: entry.reaction_time,
-    lap50: entry.lap50,
-    lap100: entry.lap100,
-    lap150: entry.lap150,
-    lap200: entry.lap200
+    rank: entry.rank ?? null,
+    swimmer_name: entry.swimmer_name ?? null,
+    school_name: entry.school_name ?? null,
+    entry_group_name1: entry.entry_group_name1 ?? null,
+    entry_group_name2: entry.entry_group_name2 ?? null,
+    entry_group_name3: entry.entry_group_name3 ?? null,
+    result_time: entry.result_time ?? null,
+    reaction_time: entry.reaction_time ?? null,
+    lap25: entry.lap25 ?? null,
+    lap50: entry.lap50 ?? null,
+    lap75: entry.lap75 ?? null,
+    lap100: entry.lap100 ?? null,
+    lap125: entry.lap125 ?? null,
+    lap150: entry.lap150 ?? null,
+    lap175: entry.lap175 ?? null,
+    lap200: entry.lap200 ?? null,
+    heat: entry.heat ?? null,
+    game_code: entry.game_code ?? null,
+    program_id: entry.program_id ?? null,
+    display_program_id: entry.display_program_id ?? null,
+    swimming_style_code: entry.swimming_style_code ?? null,
+    swimming_style_name: entry.swimming_style_name ?? null,
+    distance: entry.distance ?? null,
+    distance_name: entry.distance_name ?? null,
+    race_division_name: entry.race_division_name ?? null,
+    gender_code: entry.gender_code ?? null,
+    gender_name: entry.gender_name ?? null,
+    class_name: entry.class_name ?? null,
+    game_date: entry.race_date ?? null,
+    race_status: entry.race_status ?? null,
+    is_finished: entry.is_finished ?? null,
+    has_reaction_time: entry.has_reaction_time ?? null,
+    has_lap_time: entry.has_lap_time ?? null
   }));
 }
-
 module.exports = { parseRaceResults };

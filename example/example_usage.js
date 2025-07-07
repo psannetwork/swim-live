@@ -11,7 +11,7 @@ const SwimScraper = require('../index');
     //console.log('試合スケジュール:', races);
 
     // 選手名「小松 葵」で検索（game_code: 3824703）
-    const searchedRaces = await SwimScraper.getSearchedRaces('3824703', '中川　彩映', null, null);
+    const searchedRaces = await SwimScraper.getSearchedRaces('3824703', '玉井　淳規', null, null);
     console.log('選手名が出場したヒート:', searchedRaces);
 
     // 所属名「LIBERO」で検索（game_code: 3824703）
@@ -25,9 +25,6 @@ const SwimScraper = require('../index');
     // 全条件指定で検索（複合検索）
     const fullSearch = await SwimScraper.getSearchedRaces('3824703', '中川 彩映', '南海DC', '個人メドレー');
     //console.log('複合検索結果:', fullSearch);
-
-    // CSV出力（オプション）
-    SwimScraper.exportToCSV(fullSearch, 'searched_races.csv');
 
   } catch (error) {
     console.error('エラー:', error.message);
