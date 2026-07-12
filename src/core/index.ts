@@ -71,35 +71,43 @@ export class SwimLiveScraper {
     return await fetchJson(`https://live-results.swim.or.jp/api/race_heats/select_date/${gameCode}`);
   }
 
-  // New API Wrappers (v1)
-  static async getV1(path: string, params: string = ''): Promise<any> {
+  // --- V1 Dedicated API Wrappers ---
+  private static async getV1(path: string, params: string = ''): Promise<any> {
     const url = `https://result.swim.or.jp/api/v1/${path.startsWith('/') ? path.slice(1) : path}${params ? '?' + params : ''}`;
     return await fetchJson(url);
   }
 
-  static async getV1Games(params: string): Promise<any> {
-    return await this.getV1('games', params);
-  }
+  // Games
+  static async getV1Games(params: string): Promise<any> { return this.getV1('games', params); }
+  static async getV1Game(gameId: string): Promise<any> { return this.getV1(`games/${gameId}`); }
+  static async getV1GameClasses(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/classes`); }
+  static async getV1GameRaces(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/races`); }
 
-  static async getV1GameDetails(gameId: string): Promise<any> {
-    return await this.getV1(`games/${gameId}`);
-  }
+  // Athletes
+  static async getV1Athlete(athleteId: string): Promise<any> { return this.getV1(`athletes/${athleteId}`); }
+  static async getV1AthleteBestFinaPoints(athleteId: string, params: string): Promise<any> { return this.getV1(`athletes/${athleteId}/best_fina_points`, params); }
+  static async getV1AthleteCareers(athleteId: string): Promise<any> { return this.getV1(`athletes/${athleteId}/careers`); }
+  static async getV1AthleteEntries(athleteId: string, params: string = ''): Promise<any> { return this.getV1(`athletes/${athleteId}/entries`, params); }
+  static async getV1AthleteSwimedRaces(athleteId: string, params: string): Promise<any> { return this.getV1(`athletes/${athleteId}/swimed_races`, params); }
 
-  static async getV1GameClasses(gameId: string): Promise<any> {
-    return await this.getV1(`games/${gameId}/classes`);
-  }
+  // Masters (Static)
+  static async getV1MastersDisplayYear(): Promise<any> { return this.getV1('masters/display_year'); }
+  static async getV1MastersDistances(): Promise<any> { return this.getV1('masters/distances'); }
+  static async getV1MastersGameStatuses(): Promise<any> { return this.getV1('masters/game_statuses'); }
+  static async getV1MastersGenders(): Promise<any> { return this.getV1('masters/genders'); }
+  static async getV1MastersMemberGroups(): Promise<any> { return this.getV1('masters/member_groups'); }
+  static async getV1MastersNavigations(): Promise<any> { return this.getV1('masters/navigations'); }
+  static async getV1MastersPeriods(): Promise<any> { return this.getV1('masters/periods'); }
+  static async getV1MastersRaceDivisions(): Promise<any> { return this.getV1('masters/race_divisions'); }
+  static async getV1MastersSchoolClasses(): Promise<any> { return this.getV1('masters/school_classes'); }
+  static async getV1MastersSwimmingStyles(): Promise<any> { return this.getV1('masters/swimming_styles'); }
+  static async getV1MastersWaterways(): Promise<any> { return this.getV1('masters/waterways'); }
+  static async getV1MastersYears(): Promise<any> { return this.getV1('masters/years'); }
 
-  static async getV1Athlete(athleteId: string): Promise<any> {
-    return await this.getV1(`athletes/${athleteId}`);
-  }
-
-  static async getV1MastersMasters(): Promise<any> {
-    return await this.getV1('masters/member_groups');
-  }
-
-  static async getV1RankingsUpdatedTime(): Promise<any> {
-    return await this.getV1('rankings/updated_time');
-  }
+  // Other
+  static async getV1AnnouncementsLatest(): Promise<any> { return this.getV1('announcements/latest'); }
+  static async getV1RankingsUpdatedTime(): Promise<any> { return this.getV1('rankings/updated_time'); }
+  static async getV1StandardRecordBreakersUpdatedTime(): Promise<any> { return this.getV1('standard_record_breakers/updated_time'); }
 
   static exportToCSV(data: any[], filename: string): void {
     if (!data || data.length === 0) {
