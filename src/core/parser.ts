@@ -1,5 +1,41 @@
-function parseRaceResults(data) {
-  return data.map(entry => ({
+export interface RaceResult {
+  rank: string | null;
+  swimmer_name: string | null;
+  school_name: string | null;
+  entry_group_name1: string | null;
+  entry_group_name2: string | null;
+  entry_group_name3: string | null;
+  result_time: string | null;
+  reaction_time: string | null;
+  lap25: string | null;
+  lap50: string | null;
+  lap75: string | null;
+  lap100: string | null;
+  lap125: string | null;
+  lap150: string | null;
+  lap175: string | null;
+  lap200: string | null;
+  heat: string | null;
+  game_code: string | null;
+  program_id: string | null;
+  display_program_id: string | null;
+  swimming_style_code: string | null;
+  swimming_style_name: string | null;
+  distance: string | null;
+  distance_name: string | null;
+  race_division_name: string | null;
+  gender_code: string | null;
+  gender_name: string | null;
+  class_name: string | null;
+  game_date: string | null;
+  race_status: string | null;
+  is_finished: boolean | null;
+  has_reaction_time: boolean | null;
+  has_lap_time: boolean | null;
+}
+
+export function parseRaceResults(data: any[]): RaceResult[] {
+  return data.map((entry: any) => ({
     rank: entry.rank ?? null,
     swimmer_name: entry.swimmer_name ?? null,
     school_name: entry.school_name ?? null,
@@ -35,4 +71,3 @@ function parseRaceResults(data) {
     has_lap_time: entry.has_lap_time ?? null
   }));
 }
-module.exports = { parseRaceResults };

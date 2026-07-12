@@ -1,15 +1,13 @@
-const axios = require('axios');
-const { decodeUnicode } = require('./utils');
+import axios from 'axios';
+import { decodeUnicode } from '@utils';
 
-async function fetchJson(url) {
+export async function fetchJson(url: string): Promise<any> {
   try {
     const res = await axios.get(url);
     const data = typeof res.data === 'string' ? JSON.parse(decodeUnicode(res.data)) : res.data;
     return data || [];
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error fetching ${url}:`, err.message);
     return [];
   }
 }
-
-module.exports = { fetchJson };
