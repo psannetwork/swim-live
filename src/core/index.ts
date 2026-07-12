@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Parser } from 'json2csv';
 import { fetchJson } from './scraper';
 import { parseRaceResults, RaceResult } from './parser';
-import { Game, Athlete, FinaPoint } from './types';
+import { Game, Athlete, FinaPoint, GameListResponse } from './types';
 
 export class SwimLiveScraper {
   // Helper for query params
@@ -122,10 +122,14 @@ export class SwimLiveScraper {
   static async getV1MastersWaterways(): Promise<any> { return this.getV1('masters/waterways'); }
   static async getV1MastersYears(): Promise<any> { return this.getV1('masters/years'); }
 
-  // Other
-  static async getV1AnnouncementsLatest(): Promise<any> { return this.getV1('announcements/latest'); }
-  static async getV1RankingsUpdatedTime(): Promise<any> { return this.getV1('rankings/updated_time'); }
-  static async getV1StandardRecordBreakersUpdatedTime(): Promise<any> { return this.getV1('standard_record_breakers/updated_time'); }
+  // Search functionalities
+  static async searchGames(name: string, year: number = 2026): Promise<Game[]> {
+    const params: Record<string, string | number> = { year, name, game_status: 5, page: 1, sort_order: 'ascend', official_code: 1 };
+    return await this.getV1('games', params);
+  }
+
+  // NOTE: HARには athletes/ 検索エンドポイントは直接ないため、ゲーム検索から辿る必要がある
+  // ここでは要望に応じ、ゲーム検索機能を拡張
 
   // CSV
   static exportToCSV(data: any[], filename: string): void {
