@@ -128,8 +128,9 @@ export class SwimLiveScraper {
     return await this.getV1('games', params);
   }
 
-  // NOTE: HARには athletes/ 検索エンドポイントは直接ないため、ゲーム検索から辿る必要がある
-  // ここでは要望に応じ、ゲーム検索機能を拡張
+  static async searchAthletes(params: Record<string, string | number>): Promise<any> {
+    return await this.getV1('athletes', params);
+  }
 
   // CSV
   static exportToCSV(data: any[], filename: string): void {
