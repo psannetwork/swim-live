@@ -4,10 +4,8 @@ import { decodeUnicode } from '@utils';
 export async function fetchJson(url: string): Promise<any> {
   try {
     const res = await axios.get(url);
-    const data = typeof res.data === 'string' ? JSON.parse(decodeUnicode(res.data)) : res.data;
-    return data || [];
+    return typeof res.data === 'string' ? JSON.parse(decodeUnicode(res.data)) : res.data;
   } catch (err: any) {
-    console.error(`Error fetching ${url}:`, err.message);
-    return [];
+    throw new Error(`Failed to fetch ${url}: ${err.message}`);
   }
 }
