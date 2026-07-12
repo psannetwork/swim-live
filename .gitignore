@@ -4,3 +4,4 @@ dist
 *.csv
 package-lock.json
 .env
+*.har
