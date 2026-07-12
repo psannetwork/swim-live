@@ -1,37 +1,38 @@
-const { fetchJson } = require('./scraper');
-const { parseRaceResults } = require('./parser');
+import fs from 'fs';
+import { Parser } from 'json2csv';
+import { fetchJson } from './scraper';
+import { parseRaceResults, RaceResult } from './parser';
 
-class SwimLiveScraper {
-  static async getMemberGroupGames(groupCode) {
+export class SwimLiveScraper {
+  static async getMemberGroupGames(groupCode: number | string): Promise<any> {
     const url = `https://live-results.swim.or.jp/api/games/member_group/${groupCode}`;
     return await fetchJson(url);
   }
 
-  static async getGameDetails(gameCode) {
+  static async getGameDetails(gameCode: string): Promise<any> {
     const url = `https://live-results.swim.or.jp/api/games/${gameCode}`;
     return await fetchJson(url);
   }
 
-  static async getRaceListByGameDate(gameCode, date) {
+  static async getRaceListByGameDate(gameCode: string, date: string): Promise<any> {
     const url = `https://live-results.swim.or.jp/api/race_heats/race_list/${gameCode}?game_date=${date}`;
     return await fetchJson(url);
   }
 
-  static async getRaceStatus(gameCode, programId, heat) {
+  static async getRaceStatus(gameCode: string, programId: string, heat: string): Promise<any> {
     const url = `https://live-results.swim.or.jp/api/race_heats/race?game_code=${gameCode}&program_id=${programId}&heat=${heat}`;
     return await fetchJson(url);
   }
 
-  static async getRaceResults(gameCode, programId, heat) {
+  static async getRaceResults(gameCode: string, programId: string, heat: string): Promise<RaceResult[]> {
     const url = ` https://live-results.swim.or.jp/api/result/race?game_code=${gameCode}&program_id=${programId}&heat=${heat}&raceStatus=9`;
     const raw = await fetchJson(url);
     return parseRaceResults(raw);
   }
 
-  // 🔍 新規追加：選手名・所属・種目名でヒート情報検索
-  static async getSearchedRaces(gameCode, playerName = null, belongName = null, eventName = null) {
+  static async getSearchedRaces(gameCode: string, playerName: string | null = null, belongName: string | null = null, eventName: string | null = null): Promise<any> {
     let url = ` https://live-results.swim.or.jp/api/race_heats/searchedRaceHeats/${gameCode}`;
-    const params = [];
+    const params: string[] = [];
 
     if (playerName) params.push(`playerName=${encodeURIComponent(playerName)}`);
     if (belongName) params.push(`belongName=${encodeURIComponent(belongName)}`);
@@ -44,10 +45,34 @@ class SwimLiveScraper {
     return await fetchJson(url);
   }
 
-  static exportToCSV(data, filename) {
-    const fs = require('fs');
-    const { Parser } = require('json2csv');
-    
+  // ... existing methods
+
+  static async getGames(): Promise<any> {
+    return await fetchJson('https://live-results.swim.or.jp/api/games/');
+  }
+
+  static async getInProgressCount(): Promise<any> {
+    return await fetchJson('https://live-results.swim.or.jp/api/games/in_progress_count');
+  }
+
+  static async getMastersMemberGroups(): Promise<any> {
+    return await fetchJson('https://live-results.swim.or.jp/api/masters/member_groups');
+  }
+
+  static async getRaceMessages(gameCode: string): Promise<any> {
+    return await fetchJson(`https://live-results.swim.or.jp/api/race_heats/messages/${gameCode}`);
+  }
+
+  static async getNextRace(gameCode: string, programId: string, heat: string, raceDate: string): Promise<any> {
+    const url = `https://live-results.swim.or.jp/api/race_heats/next?game_code=${gameCode}&program_id=${programId}&heat=${heat}&race_date=${raceDate}`;
+    return await fetchJson(url);
+  }
+
+  static async getSelectDateList(gameCode: string): Promise<any> {
+    return await fetchJson(`https://live-results.swim.or.jp/api/race_heats/select_date/${gameCode}`);
+  }
+
+  static exportToCSV(data: any[], filename: string): void {
     if (!data || data.length === 0) {
       console.warn("データが空です。デフォルトのヘッダーのみで出力します。");
       
@@ -69,10 +94,8 @@ class SwimLiveScraper {
       const csv = parser.parse(data);
       fs.writeFileSync(filename, csv);
       console.log(`${filename} へ出力しました。`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("CSV出力中にエラー:", err.message);
     }
   }
 }
-
-module.exports = SwimLiveScraper;
