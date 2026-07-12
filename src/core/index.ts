@@ -87,8 +87,8 @@ export class SwimLiveScraper {
   }
 
   // Games
-  static async getV1Games(params: Record<string, string | number>): Promise<Game[]> { return this.getV1('games', params); }
-  static async getV1Game(gameId: string): Promise<any> { return this.getV1(`games/${gameId}`); }
+  static async getV1Games(params: Record<string, string | number>): Promise<GameListResponse> { return this.getV1('games', params); }
+  static async getV1Game(gameId: string): Promise<Game> { return this.getV1(`games/${gameId}`); }
   static async getV1GameClasses(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/classes`); }
   static async getV1GameRaces(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/races`); }
 
