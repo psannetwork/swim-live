@@ -73,27 +73,27 @@ export class SwimLiveScraper {
 
   // New API Wrappers (v1)
   static async getV1Games(params: string = ''): Promise<any> {
-    return await fetchJson(`https://live-results.swim.or.jp/api/v1/games${params ? '?' + params : ''}`);
+    return await fetchJson(`https://result.swim.or.jp/api/v1/games${params ? '?' + params : ''}`);
   }
 
   static async getV1GameDetails(gameId: string): Promise<any> {
-    return await fetchJson(`https://live-results.swim.or.jp/api/v1/games/${gameId}`);
+    return await fetchJson(`https://result.swim.or.jp/api/v1/games/${gameId}`);
   }
 
   static async getV1GameClasses(gameId: string): Promise<any> {
-    return await fetchJson(`https://live-results.swim.or.jp/api/v1/games/${gameId}/classes`);
+    return await fetchJson(`https://result.swim.or.jp/api/v1/games/${gameId}/classes`);
   }
 
   static async getV1Athlete(athleteId: string): Promise<any> {
-    return await fetchJson(`https://live-results.swim.or.jp/api/v1/athletes/${athleteId}`);
+    return await fetchJson(`https://result.swim.or.jp/api/v1/athletes/${athleteId}`);
   }
 
   static async getV1MastersMasters(): Promise<any> {
-    return await fetchJson('https://live-results.swim.or.jp/api/v1/masters/member_groups');
+    return await fetchJson('https://result.swim.or.jp/api/v1/masters/member_groups');
   }
 
   static async getV1RankingsUpdatedTime(): Promise<any> {
-    return await fetchJson('https://live-results.swim.or.jp/api/v1/rankings/updated_time');
+    return await fetchJson('https://result.swim.or.jp/api/v1/rankings/updated_time');
   }
 
   static exportToCSV(data: any[], filename: string): void {
