@@ -2,8 +2,17 @@ import fs from 'fs';
 import { Parser } from 'json2csv';
 import { fetchJson } from './scraper';
 import { parseRaceResults, RaceResult } from './parser';
+import { Game, Athlete, FinaPoint } from './types';
 
 export class SwimLiveScraper {
+  // Helper for query params
+  private static serializeParams(params: Record<string, string | number>): string {
+    return Object.entries(params)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join('&');
+  }
+
+  // --- Core Methods ---
   static async getMemberGroupGames(groupCode: number | string): Promise<any> {
     const url = `https://live-results.swim.or.jp/api/games/member_group/${groupCode}`;
     return await fetchJson(url);
@@ -45,7 +54,6 @@ export class SwimLiveScraper {
     return await fetchJson(url);
   }
 
-  // Existing methods...
   static async getGames(): Promise<any> {
     return await fetchJson('https://live-results.swim.or.jp/api/games/');
   }
@@ -72,23 +80,24 @@ export class SwimLiveScraper {
   }
 
   // --- V1 Dedicated API Wrappers ---
-  private static async getV1(path: string, params: string = ''): Promise<any> {
-    const url = `https://result.swim.or.jp/api/v1/${path.startsWith('/') ? path.slice(1) : path}${params ? '?' + params : ''}`;
+  private static async getV1(path: string, params?: Record<string, string | number>): Promise<any> {
+    const queryString = params ? this.serializeParams(params) : '';
+    const url = `https://result.swim.or.jp/api/v1/${path.startsWith('/') ? path.slice(1) : path}${queryString ? '?' + queryString : ''}`;
     return await fetchJson(url);
   }
 
   // Games
-  static async getV1Games(params: string): Promise<any> { return this.getV1('games', params); }
+  static async getV1Games(params: Record<string, string | number>): Promise<Game[]> { return this.getV1('games', params); }
   static async getV1Game(gameId: string): Promise<any> { return this.getV1(`games/${gameId}`); }
   static async getV1GameClasses(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/classes`); }
   static async getV1GameRaces(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/races`); }
 
   // Athletes
-  static async getV1Athlete(athleteId: string): Promise<any> { return this.getV1(`athletes/${athleteId}`); }
-  static async getV1AthleteBestFinaPoints(athleteId: string, params: string): Promise<any> { return this.getV1(`athletes/${athleteId}/best_fina_points`, params); }
+  static async getV1Athlete(athleteId: string): Promise<Athlete> { return this.getV1(`athletes/${athleteId}`); }
+  static async getV1AthleteBestFinaPoints(athleteId: string, params: Record<string, string | number>): Promise<FinaPoint[]> { return this.getV1(`athletes/${athleteId}/best_fina_points`, params); }
   static async getV1AthleteCareers(athleteId: string): Promise<any> { return this.getV1(`athletes/${athleteId}/careers`); }
-  static async getV1AthleteEntries(athleteId: string, params: string = ''): Promise<any> { return this.getV1(`athletes/${athleteId}/entries`, params); }
-  static async getV1AthleteSwimedRaces(athleteId: string, params: string): Promise<any> { return this.getV1(`athletes/${athleteId}/swimed_races`, params); }
+  static async getV1AthleteEntries(athleteId: string, params?: Record<string, string | number>): Promise<any> { return this.getV1(`athletes/${athleteId}/entries`, params); }
+  static async getV1AthleteSwimedRaces(athleteId: string, params: Record<string, string | number>): Promise<any> { return this.getV1(`athletes/${athleteId}/swimed_races`, params); }
 
   // Masters (Static)
   static async getV1MastersDisplayYear(): Promise<any> { return this.getV1('masters/display_year'); }
@@ -109,6 +118,7 @@ export class SwimLiveScraper {
   static async getV1RankingsUpdatedTime(): Promise<any> { return this.getV1('rankings/updated_time'); }
   static async getV1StandardRecordBreakersUpdatedTime(): Promise<any> { return this.getV1('standard_record_breakers/updated_time'); }
 
+  // CSV
   static exportToCSV(data: any[], filename: string): void {
     if (!data || data.length === 0) {
       console.warn("データが空です。デフォルトのヘッダーのみで出力します。");
