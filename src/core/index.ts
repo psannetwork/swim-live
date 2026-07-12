@@ -72,8 +72,8 @@ export class SwimLiveScraper {
   }
 
   // New API Wrappers (v1)
-  static async getV1Games(params: string = ''): Promise<any> {
-    return await fetchJson(`https://result.swim.or.jp/api/v1/games${params ? '?' + params : ''}`);
+  static async getV1Games(params: string): Promise<any> {
+    return await fetchJson(`https://result.swim.or.jp/api/v1/games?${params}`);
   }
 
   static async getV1GameDetails(gameId: string): Promise<any> {
