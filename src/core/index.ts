@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Parser } from 'json2csv';
 import { fetchJson } from './scraper';
 import { parseRaceResults, RaceResult } from './parser';
-import { Game, Athlete, FinaPoint, GameListResponse } from './types';
+import { Game, Athlete, FinaPoint, GameListResponse, Announcement } from './types';
 
 export class SwimLiveScraper {
   // Helper for query params
@@ -80,10 +80,15 @@ export class SwimLiveScraper {
   }
 
   // --- V1 Dedicated API Wrappers ---
-  private static async getV1(path: string, params?: Record<string, string | number>): Promise<any> {
+  public static async getV1(path: string, params?: Record<string, string | number>): Promise<any> {
     const queryString = params ? this.serializeParams(params) : '';
     const url = `https://result.swim.or.jp/api/v1/${path.startsWith('/') ? path.slice(1) : path}${queryString ? '?' + queryString : ''}`;
     return await fetchJson(url);
+  }
+
+  // Generic Comparing Wrapper
+  static async getV1Comparing(path: string, params?: Record<string, string | number>): Promise<any> {
+    return this.getV1(`${path}/comparing`, params);
   }
 
   // Games
@@ -91,22 +96,55 @@ export class SwimLiveScraper {
   static async getV1Game(gameId: string): Promise<Game> { return this.getV1(`games/${gameId}`); }
   static async getV1GameClasses(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/classes`); }
   static async getV1GameRaces(gameId: string): Promise<any> { return this.getV1(`games/${gameId}/races`); }
+  static async getV1GameHeats(gameId: string, gender: string, style: string, distance: string, classCode: string): Promise<any> {
+    return this.getV1(`games/${gameId}/heats/genders/${gender}/swimming_styles/${style}/distances/${distance}/classes/${classCode}`);
+  }
+  static async getV1GameResults(gameId: string, gender: string, style: string, distance: string, classCode: string, division: string, heat: string): Promise<any> {
+    return this.getV1(`games/${gameId}/results/genders/${gender}/swimming_styles/${style}/distances/${distance}/classes/${classCode}/race_divisions/${division}/heats/${heat}`);
+  }
 
+  // Athlete Details & Analysis
+  static async getV1Athlete(athleteId: string): Promise<Athlete> { return this.getV1(`athletes/${athleteId}`); }
+  static async getV1AthleteBestFinaPoints(athleteId: string, year?: number, waterwayCode?: number): Promise<any> {
+    const params: Record<string, string | number> = {};
+    if (year) params.year = year;
+    if (waterwayCode) params.waterway_code = waterwayCode;
+    return this.getV1(`athletes/${athleteId}/best_fina_points`, params);
+  }
+  static async getV1AthleteCareers(athleteId: string): Promise<any> { return this.getV1(`athletes/${athleteId}/careers`); }
+  static async getV1AthleteEntries(athleteId: string, params?: Record<string, string | number>): Promise<any> {
+    return this.getV1(`athletes/${athleteId}/entries`, params);
+  }
+  static async getV1AthleteSwimedRaces(athleteId: string, periodCode?: number, waterwayCode?: number): Promise<any> {
+    const params: Record<string, string | number> = {};
+    if (periodCode) params.period_code = periodCode;
+    if (waterwayCode) params.waterway_code = waterwayCode;
+    return this.getV1(`athletes/${athleteId}/swimed_races`, params);
+  }
+  
   // Athlete Results/Histories
-  static async getV1AthleteResults(athleteId: string, waterway: string, style: string, distance: string, type: 'best' | 'graphs' | 'records', params?: Record<string, string | number>): Promise<any> {
-    return this.getV1(`athletes/${athleteId}/results/waterways/${waterway}/swimming_styles/${style}/distances/${distance}/${type}`, params);
+  static async getV1AthleteResults(
+    athleteId: string, 
+    waterwayCode: number | string, 
+    styleCode: number | string, 
+    distanceCode: number | string, 
+    type: 'best' | 'graphs' | 'records' = 'best',
+    params?: Record<string, string | number>
+  ): Promise<any> {
+    return this.getV1(
+      `athletes/${athleteId}/results/waterways/${waterwayCode}/swimming_styles/${styleCode}/distances/${distanceCode}/${type}`, 
+      params
+    );
   }
 
   static async getV1AthleteHistories(athleteId: string, waterway: string, style: string, distance: string, raceDivision: string, params?: Record<string, string | number>): Promise<any> {
     return this.getV1(`athletes/${athleteId}/histories/waterways/${waterway}/swimming_styles/${style}/distances/${distance}/race_divisions/${raceDivision}`, params);
   }
 
-  static async getV1AthleteCompare(athleteId: string, waterway: string, style: string, distance: string, raceDivision: string, type: 'histories' | 'results', params: Record<string, string | number>): Promise<any> {
-    const path = type === 'histories'
-      ? `athletes/${athleteId}/histories/waterways/${waterway}/swimming_styles/${style}/distances/${distance}/race_divisions/${raceDivision}/comparing`
-      : `athletes/${athleteId}/results/genders/${waterway}/swimming_styles/${style}/distances/${distance}/classes/${raceDivision}/race_divisions/${distance}/heats/1/comparing`; // Note: This structure seems complex based on HAR, need verification
-    return this.getV1(path, params);
-  }
+  // Utilities
+  static async getV1AnnouncementsLatest(): Promise<Announcement[]> { return this.getV1('announcements/latest'); }
+  static async getV1RankingsUpdatedTime(): Promise<any> { return this.getV1('rankings/updated_time'); }
+  static async getV1StandardRecordBreakersUpdatedTime(): Promise<any> { return this.getV1('standard_record_breakers/updated_time'); }
 
   // Masters (Static)
   static async getV1MastersDisplayYear(): Promise<any> { return this.getV1('masters/display_year'); }
