@@ -1,82 +1,72 @@
-# API Documentation
+# Swim-Live API Documentation (v1)
 
-## SwimLiveScraper
+This documentation covers the `SwimLiveScraper` V1 API methods. All methods return a promise. For robust development, it is highly recommended to validate the response structure against expected types.
 
-### Core Methods
+## General Usage
 
-#### `getMemberGroupGames(groupCode: number | string): Promise<any>`
-Fetches the list of games for a member group.
+```typescript
+import { SwimLiveScraper } from 'swim-live-scraper';
 
-#### `getGameDetails(gameCode: string): Promise<any>`
+// Example: Fetch Athlete Details
+const athlete = await SwimLiveScraper.getV1Athlete('54165999');
+if (athlete && athlete.swimmer_name) {
+  console.log(athlete.swimmer_name);
+}
+```
+
+## Games Endpoints
+
+### `getV1Games(params: Record<string, string | number>): Promise<GameListResponse>`
+Fetches the list of games.
+- **Required Params:** `year`, `game_status`.
+- **Response Structure:** `{ data: Game[], links: Object, meta: Object }`
+
+### `getV1Game(gameId: string): Promise<Game>`
 Fetches details of a specific game.
 
-#### `getRaceListByGameDate(gameCode: string, date: string): Promise<any>`
-Fetches the race list for a specific game and date.
+## Athlete Endpoints
 
-#### `getRaceStatus(gameCode: string, programId: string, heat: string): Promise<any>`
-Fetches the status of a race.
+### `getV1Athlete(athleteId: string): Promise<Athlete>`
+Fetches profile information for a specific athlete.
 
-#### `getRaceResults(gameCode: string, programId: string, heat: string): Promise<RaceResult[]>`
-Fetches and parses the results of a race.
+### `getV1AthleteCareers(athleteId: string): Promise<Career[]>`
+Fetches the career summary (by year/waterway) for an athlete.
 
-#### `getSearchedRaces(gameCode: string, playerName: string | null, belongName: string | null, eventName: string | null): Promise<any>`
-Searches for races based on player name, belong name, and event name.
+### `getV1AthleteBestFinaPoints(athleteId: string, year?: number, waterwayCode?: number): Promise<FinaPoint[]>`
+Fetches the best FINA points achieved by the athlete.
 
-#### `getGames(): Promise<any>`
-Fetches the list of games.
+### `getV1AthleteSwimedRaces(athleteId: string, periodCode?: number, waterwayCode?: number): Promise<SwimedRace[]>`
+Fetches the summary of raced styles/distances.
 
-#### `getInProgressCount(): Promise<any>`
-Fetches the count of games in progress.
+## Masters & Metadata Endpoints
 
-#### `getMastersMemberGroups(): Promise<any>`
-Fetches the masters member groups.
+Static master data can be fetched using `getV1Masters*()` methods:
+- `getV1MastersWaterways()`
+- `getV1MastersSwimmingStyles()`
+- `getV1MastersGenders()`
+- `getV1MastersSchoolClasses()`
+- ... (and others)
 
-#### `getRaceMessages(gameCode: string): Promise<any>`
-Fetches messages for a specific game.
+## Response Validation Strategy
 
-#### `getNextRace(gameCode: string, programId: string, heat: string, raceDate: string): Promise<any>`
-Fetches the next race info.
+To ensure type safety and handle API changes, implement validation:
 
-#### `getSelectDateList(gameCode: string): Promise<any>`
-Fetches the available dates for a game.
+```typescript
+// Example: Validating Athlete Response
+interface Athlete {
+  swimmer_name: string;
+  swimmer_code: string;
+  // ... other fields
+}
 
-### V1 Dedicated Methods
+function isAthlete(data: any): data is Athlete {
+  return typeof data === 'object' && 'swimmer_name' in data && 'swimmer_code' in data;
+}
 
-#### `getV1Games(params: string): Promise<any>`
-Fetches games list (v1 API). Required `params` (e.g., 'year=2026&game_status=3').
-
-#### `getV1Game(gameId: string): Promise<any>`
-Fetches specific game details (v1 API).
-
-#### `getV1GameClasses(gameId: string): Promise<any>`
-Fetches game classes (v1 API).
-
-#### `getV1GameRaces(gameId: string): Promise<any>`
-Fetches game races (v1 API).
-
-#### `getV1Athlete(athleteId: string): Promise<any>`
-Fetches athlete details (v1 API).
-
-#### `getV1AthleteBestFinaPoints(athleteId: string, params: string): Promise<any>`
-Fetches athlete FINA points (v1 API).
-
-#### `getV1AthleteCareers(athleteId: string): Promise<any>`
-Fetches athlete careers (v1 API).
-
-#### `getV1AthleteEntries(athleteId: string, params: string = ''): Promise<any>`
-Fetches athlete entries (v1 API).
-
-#### `getV1AthleteSwimedRaces(athleteId: string, params: string): Promise<any>`
-Fetches athlete swam races (v1 API).
-
-#### `getV1Masters*()`
-Collection of static masters endpoints (e.g., `getV1MastersDisplayYear`, `getV1MastersDistances`, `getV1MastersGenders`, etc.).
-
-#### `getV1AnnouncementsLatest(): Promise<any>`
-Fetches latest announcements (v1 API).
-
-#### `getV1RankingsUpdatedTime(): Promise<any>`
-Fetches rankings updated time (v1 API).
-
-#### `getV1StandardRecordBreakersUpdatedTime(): Promise<any>`
-Fetches standard record breakers updated time (v1 API).
+const data = await SwimLiveScraper.getV1Athlete('54165999');
+if (isAthlete(data)) {
+  // Safe to use data.swimmer_name
+} else {
+  throw new Error('Invalid API response structure');
+}
+```

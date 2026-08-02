@@ -2,13 +2,14 @@
   "name": "swim-live-scraper",
   "version": "1.0.0",
   "description": "JASF公式水泳大会のライブスコアAPIからデータを取得するライブラリ",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/core/index.js",
+  "types": "dist/core/index.d.ts",
   "scripts": {
     "build": "tsc && tsc-alias",
     "prepublishOnly": "npm run build",
     "test": "ts-node -r tsconfig-paths/register example/example_usage.ts",
-    "start:demo": "ts-node -r tsconfig-paths/register demo/server.ts"
+    "demo": "ts-node -r tsconfig-paths/register demo/app.ts",
+    "start:demo": "ts-node -r tsconfig-paths/register demo/app.ts"
   },
   "keywords": [
     "swim",
