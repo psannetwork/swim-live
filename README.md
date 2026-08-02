@@ -13,9 +13,17 @@ npm install swim-live-scraper
 ```typescript
 import { SwimLiveScraper } from 'swim-live-scraper';
 
-// Example: Search for races
-const races = await SwimLiveScraper.getSearchedRaces('3824703', 'Player Name', null, null);
-console.log(races);
+// Example: Search for games
+const games = await SwimLiveScraper.searchGames({ name: '日本選手権', year: 2026 });
+console.log(games.data);
+
+// Example: Search for athletes
+const athletes = await SwimLiveScraper.searchAthletes({ 
+  name: '田中', 
+  school_class_code: 1, 
+  gender_code: 1 
+});
+console.log(athletes.data);
 ```
 
 ## Documentation
