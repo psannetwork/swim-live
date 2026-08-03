@@ -1,5 +1,5 @@
-import { fetchJson } from './scraper';
-import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, MasterData, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse } from './types';
+import { fetchJson } from '../scrapers/scraper';
+import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, MasterData, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse } from '../types/types';
 
 const BASE_URL = 'https://result.swim.or.jp/api/v1';
 

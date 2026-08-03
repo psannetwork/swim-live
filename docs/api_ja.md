@@ -73,6 +73,13 @@ V1 APIを使用して大会を検索します。
 
 ---
 
+### 注意点: IDの違い
+
+- `raceResults`から得られる`swimmer_code`は、APIのエンドポイントで使用するID（`athleteId`）とは異なる場合があります。
+- `searchAthletes`メソッドの`params`オブジェクトに`code`パラメータを指定して、`swimmer_code`を検索条件として使用できます。
+- `searchAthletes`の結果として得られる`Athlete`オブジェクトの`swimmer_code`や`entry_group.code`は、`getV1Athlete`などのエンドポイントで使用する`athleteId`として有効でない場合があります。
+- `searchAthletes`で得られた選手情報から、他の選手情報取得APIを呼び出すには、`athleteId`を特定する必要があります。`Athlete`インターフェースに`athleteId`に相当するフィールドが存在しない場合、他のAPIは失敗します。
+
 ## 2. 利用方法の例
 
 ```typescript

@@ -39,7 +39,7 @@ export interface Game {
   contestants: number;
   game_status: { code: number; name: string };
   is_official_games: boolean;
-  delivery_status_code: number;
+  delivery_status: number;
 }
 
 export interface Master {
@@ -58,7 +58,7 @@ export interface RawGame {
   contestants: number;
   game_status: Master;
   is_official_games: boolean;
-  delivery_status_code: number;
+  delivery_status: number;
 }
 
 export interface LiveGame {
