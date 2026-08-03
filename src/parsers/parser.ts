@@ -1,4 +1,4 @@
-import { NormalizedRace, GameDetail, NormalizedGame, Master, RawGame, LiveGame, RaceResult, Athlete, FinaPoint, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse } from './types';
+import { NormalizedRace, GameDetail, NormalizedGame, Master, RawGame, LiveGame, RaceResult, Athlete, FinaPoint, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse } from '../types/types';
 
 export function parseRaceResults(data: any[]): RaceResult[] {
   const parseBool = (val: any) => val === 'true' || val === true;

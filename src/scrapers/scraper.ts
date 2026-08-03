@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { decodeUnicode } from '../utils';
-import { SwimApiError, SwimNetworkError, SwimRateLimitError } from './errors';
+import { SwimApiError, SwimNetworkError, SwimRateLimitError } from '../errors/errors';
 
 const client = axios.create({
   timeout: 10000, // 10 seconds timeout

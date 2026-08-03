@@ -1,6 +1,6 @@
-import { fetchJson } from './scraper';
-import { normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseRaceResults } from './parser';
-import { NormalizedRace, GameDetail, NormalizedGame, RaceResult } from './types';
+import { fetchJson } from '../scrapers/scraper';
+import { normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseRaceResults } from '../parsers/parser';
+import { NormalizedRace, GameDetail, NormalizedGame, RaceResult } from '../types/types';
 
 const BASE_URL = 'https://live-results.swim.or.jp/api';
 

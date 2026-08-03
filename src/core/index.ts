@@ -1,9 +1,9 @@
 import fs from 'fs';
 import { Parser } from 'json2csv';
-import { LiveApi } from './live_api';
-import { V1Api } from './v1_api';
-import { parseRaceResults, normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseAthlete, parseFinaPoints, parseAthleteSwimedRaces, parseAthleteEntries, parseAthleteRecords, parseAthleteBestRecord, parseAthleteGraphs } from './parser';
-import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, NormalizedRace, GameDetail, NormalizedGame, RaceResult, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData } from './types';
+import { LiveApi } from '../apis/live_api';
+import { V1Api } from '../apis/v1_api';
+import { parseRaceResults, normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseAthlete, parseFinaPoints, parseAthleteSwimedRaces, parseAthleteEntries, parseAthleteRecords, parseAthleteBestRecord, parseAthleteGraphs, parseGameClassInfo, parseAthleteHistory, parseComparisonData, normalizeRaceHeatsList } from '../parsers/parser';
+import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, NormalizedRace, GameDetail, NormalizedGame, RaceResult, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse, MasterData } from '../types/types';
 
 export { createMasterMap };
 
@@ -138,6 +138,26 @@ export class SwimLiveScraper {
     return parseAthleteGraphs(raw);
   }
 
+  // --- New API Methods ---
+  static async getGameClassInfo(gameCode: string): Promise<GameClassApiResponse> {
+    const raw = await V1Api.getGameClassInfo(gameCode);
+    return parseGameClassInfo(raw);
+  }
+
+  static async getMastersRaceDivisions(): Promise<MasterData[]> {
+    return await V1Api.getMastersRaceDivisions();
+  }
+
+  static async getAthleteHistory(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, divisionCode: number, params?: { period_code?: number; game_category_codes?: number[]; page?: number; per_page?: number }): Promise<AthleteHistoryResponse> {
+    const raw = await V1Api.getAthleteHistory(swimmerCode, waterwayCode, styleCode, distanceCode, divisionCode, params);
+    return parseAthleteHistory(raw);
+  }
+
+  static async getAthleteComparison(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, divisionCode: number, resultIds: number[]): Promise<ComparisonResponse> {
+    const raw = await V1Api.getAthleteComparison(swimmerCode, waterwayCode, styleCode, distanceCode, divisionCode, resultIds);
+    return parseComparisonData(raw);
+  }
+
   // --- V1 Dedicated API Wrappers (using V1Api) ---
   static async getV1Games(params: Record<string, string | number>): Promise<GameListResponse> { return V1Api.getGames(params); }
   static async getV1Game(gameId: string): Promise<Game> { return V1Api.get('games/' + gameId); }
@@ -149,29 +169,39 @@ export class SwimLiveScraper {
     return await V1Api.searchGames(params);
   }
 
-  static async searchAthletes(params: {
-    name?: string;
-    member_group_name?: string;
-    school_class_name?: string;
-    gender_name?: string;
-    entry_group_name?: string;
-    page?: number;
-  }): Promise<AthleteListResponse> {
-    const groups = await this.getCachedMemberGroups() || [];
-    const classes = await this.getCachedSchoolClasses() || [];
-    const genders = await this.getCachedGenders() || [];
+    static async searchAthletes(params: {
+        name?: string;
+        member_group_name?: string;
+        school_class_name?: string;
+        gender_name?: string;
+        entry_group_name?: string;
+        page?: number;
+    }): Promise<AthleteListResponse> {
+        const groups = await this.getCachedMemberGroups() || [];
+        const classes = await this.getCachedSchoolClasses() || [];
+        const genders = await this.getCachedGenders() || [];
 
-    const memberGroup = groups.find(g => g.member_group_name === params.member_group_name);
-    const schoolClass = classes.find(c => c.school_class_name === params.school_class_name);
-    const gender = genders.find(g => g.gender_name === params.gender_name);
+        const memberGroup = groups.find(g => g.member_group_name === params.member_group_name);
+        const schoolClass = classes.find(c => c.school_class_name === params.school_class_name);
+        const gender = genders.find(g => g.gender_name === params.gender_name);
 
-    return await V1Api.searchAthletes(
-        params,
-        (memberGroup && memberGroup.code !== null) ? memberGroup.code : 99,
-        (schoolClass && schoolClass.code !== null) ? schoolClass.code : 99,
-        (gender && gender.code !== null) ? gender.code : 99
-    );
-  }
+        return await V1Api.searchAthletes(
+            params,
+            (memberGroup && memberGroup.code !== null) ? memberGroup.code : 99,
+            (schoolClass && schoolClass.code !== null) ? schoolClass.code : 99,
+            (gender && gender.code !== null) ? gender.code : 99
+        );
+    }
+
+    // 選手コードをAPI IDに変換するヘルパー関数
+    static swimmerCodeToApiId(swimmerCode: string): string {
+        const e = parseInt(swimmerCode, 10);
+        if (isNaN(e)) {
+            throw new Error(`Invalid swimmer code: ${swimmerCode}`);
+        }
+        const apiId = (e + 10000000) * 3 + 3;
+        return apiId.toString();
+    }
 
   // CSV
   static exportToCSV(data: any[], filename: string): void {
