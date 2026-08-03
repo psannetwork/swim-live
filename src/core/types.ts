@@ -1,3 +1,33 @@
+export interface RaceResult {
+  rank: number | null;
+  lane: string | null;
+  lane_adjusted: string | null;
+  result_time: string | null;
+  reaction_time: string | null;
+  swimmer_name: string | null;
+  swimmer_code: string | null;
+  entry_group_name1: string | null;
+  entry_group_name2: string | null;
+  entry_group_name3: string | null;
+  school_name: string | null;
+  school_class: number | null;
+  school_class_code: number | null;
+  career_best_time: string | null;
+  qualifying_time: string | null;
+  qualification_level: string | null;
+  lap50: string | null;
+  lap100: string | null;
+  lap150: string | null;
+  lap200: string | null;
+  lap250: string | null;
+  lap300: string | null;
+  lap400: string | null;
+  has_reaction_time: boolean;
+  has_lap_time: boolean;
+  status_text: string | null;
+  status_name: string | null;
+}
+
 export interface Game {
   game_code: string;
   start_date: string;
@@ -5,7 +35,7 @@ export interface Game {
   group: { code: number; name: string };
   waterway: { code: number; name: string };
   game_name: string;
-  pool: string;
+  pool: string | null;
   contestants: number;
   game_status: { code: number; name: string };
   is_official_games: boolean;
@@ -24,7 +54,7 @@ export interface RawGame {
   group: Master;
   waterway: Master;
   game_name: string;
-  pool: string;
+  pool: string | null;
   contestants: number;
   game_status: Master;
   is_official_games: boolean;
@@ -46,10 +76,14 @@ export interface NormalizedGame {
   game_code: string;
   game_name: string;
   period: string; // 期間 (例: "08.02(日)")
+  waterway_code: number; // 数値コードを追加
   waterway_name: string; // 変換済み水路種別
   status_label: '開催中' | '大会終了'; // 判定済みステータス
   group_name: string; // 変換済み地域名
   pool_name: string | null; // プール名
+  delivery_status_code: number;
+  is_delivery_active: boolean;
+  delivery_status_label: string;
 }
 
 export interface MetaData {
@@ -131,12 +165,7 @@ export interface FinaPoint {
 
 export interface AthleteCareer {
   year: number;
-  game_name: string;
-  game_code: string;
-  game_short_name: string;
-  start_date: string;
-  end_date: string;
-  waterway_code: number;
+  waterways: Master[];
 }
 
 export interface Announcement {
@@ -166,14 +195,176 @@ export interface GameDetail {
   end_date: string;
   pool: string | null;
   waterway_code: number;
+  waterway_name: string;
 }
 
 export interface NormalizedRace {
   program_id: string;
+  display_program_id: string;
+  heat: string;
   race_name: string;
   class_name: string;
   division_name: string;
-  start_time: string | null;
   status: string;
+  start_time: string | null;
+  start_list_num: number;
+
+  // 進行状態
   is_finished: boolean;
+  has_started: boolean;
+  is_relay: boolean;
+  has_relay_members: boolean;
+  has_reaction_time: boolean;
+  has_lap_time: boolean;
+
+  // 公開設定・状態
+  startlist_pub_setting: string;
+  relay_pub_setting: string;
+  race_pub_setting: string;
+  startlist_pub_status: string;
+  relay_order_pub_status: string;
+  race_pub_status: string;
+
+  // 統計・集計カウント
+  heats_count_per_taikai: number;
+  startlist_count_per_taikai: number;
+  program_race_num: number;
+  program_race_finished_num: number;
+  program_empty_race_num: number;
+  incomplete_race_num: number;
+
+  // エラー/内部監視
+  has_reaction_time_check_err: boolean;
+  has_lap_time_check_err: boolean;
+  has_multi_incomplete_race_err: boolean;
+  has_incomplete_race_num: boolean;
+
+  // 内部判定用
+  program_status: number;
+  race_status: number;
+  alarm_status: number;
+
+  // ステージング/内部順序
+  stg_has_reaction_times: boolean;
+  stg_has_lap_times: boolean;
+  stg_max_unfinished_race_to_err: number;
+  incomplete_order: number;
+  lag_race_order: number;
+
+  // その他
+  updated_at: string;
+  game_date: string;
+}
+
+// 追加分
+export interface Period extends MasterData {}
+export interface Waterway extends MasterData {}
+export interface RaceDivision extends MasterData {}
+
+export interface AthleteSwimedRace {
+  swimming_style: MasterData;
+  distances: {
+    distance: MasterData;
+    fina_point: number;
+    appearances: number;
+    percentage: number;
+  }[];
+}
+
+export interface AthleteEntry {
+  distance: { code: number; name: string; name_for_relay: string | null };
+  swimming_style: MasterData;
+  waterways: Waterway[];
+  divisions: {
+    division: RaceDivision;
+    waterways: Waterway[];
+  }[];
+}
+
+export interface RaceRecordData {
+  result_id: number;
+  result_time: string;
+  game_name: string;
+  division: RaceDivision;
+  result_date: string;
+  is_best_record: boolean;
+}
+
+export interface AthleteRecordsResponse {
+  upperLimit: string;
+  lowerLimit: string;
+  result: {
+    year: number;
+    data: RaceRecordData[];
+  }[];
+}
+
+export interface AthleteBestRecord {
+  year: number;
+  result_time: string;
+  result_date: string;
+  fina_point: number;
+  percentage: number;
+  game_name: string;
+  game_code: string;
+  class_code: number;
+  race_division_code: number;
+  heat: number;
+  rankings: {
+    title: string;
+    ranking: number;
+    total: number;
+  }[];
+}
+
+export interface Distribution {
+  from: string;
+  to: string;
+  numbers: number;
+  percentage: string;
+}
+
+export interface AthleteGraphData {
+  records: {
+    school_class: {
+      code: number;
+      name: string;
+      grades: number[];
+      member_group: MasterData;
+    };
+    record: {
+      record: string;
+      achieve_date: string;
+      is_new: boolean;
+    };
+  }[];
+  japan_record: {
+    record: string;
+    achieve_date: string;
+    is_new: boolean;
+  };
+  graphs: {
+    max_time: string;
+    min_time: string;
+    data: {
+      school_class: { code: number; name: string; grades: number[] };
+      total: number;
+      distributions: Distribution[];
+    }[];
+  };
+}
+
+export interface GameClass {
+  gender: MasterData;
+  held_styles: {
+    swimming_style: MasterData;
+    held_distances: {
+      distance: { code: number; name: string; name_for_relay: string | null };
+      classes: MasterData[];
+    }[];
+  }[];
+}
+
+export interface GameClassResponse {
+  data: GameClass[];
 }

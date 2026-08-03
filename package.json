@@ -9,7 +9,8 @@
     "prepublishOnly": "npm run build",
     "test": "ts-node -r tsconfig-paths/register example/example_usage.ts",
     "demo": "ts-node -r tsconfig-paths/register demo/app.ts",
-    "start:demo": "ts-node -r tsconfig-paths/register demo/app.ts"
+    "start:demo": "ts-node -r tsconfig-paths/register demo/app.ts",
+    "test-heats-data": "ts-node -r tsconfig-paths/register example/test-heats-data.ts"
   },
   "keywords": [
     "swim",
