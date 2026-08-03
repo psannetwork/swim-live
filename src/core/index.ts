@@ -2,8 +2,8 @@ import fs from 'fs';
 import { Parser } from 'json2csv';
 import { LiveApi } from './live_api';
 import { V1Api } from './v1_api';
-import { parseRaceResults, normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap } from './parser';
-import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, NormalizedRace, GameDetail, NormalizedGame, RaceResult } from './types';
+import { parseRaceResults, normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseAthlete, parseFinaPoints, parseAthleteSwimedRaces, parseAthleteEntries, parseAthleteRecords, parseAthleteBestRecord, parseAthleteGraphs } from './parser';
+import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, NormalizedRace, GameDetail, NormalizedGame, RaceResult, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData } from './types';
 
 export { createMasterMap };
 
@@ -100,6 +100,42 @@ export class SwimLiveScraper {
 
   static async getInProgressCount(): Promise<any> {
     return await LiveApi.getInProgressCount();
+  }
+
+  // --- Athlete Data API Methods (using V1Api) ---
+  static async getAthleteDetails(swimmerCode: string): Promise<Athlete> {
+    const raw = await V1Api.getAthlete(swimmerCode);
+    return parseAthlete(raw);
+  }
+
+  static async getAthleteBestFinaPoints(swimmerCode: string, year?: number, waterwayCode?: number): Promise<FinaPoint[]> {
+    const raw = await V1Api.getAthleteBestFinaPoints(swimmerCode, year, waterwayCode);
+    return parseFinaPoints(raw);
+  }
+
+  static async getAthleteSwimedRaces(swimmerCode: string, periodCode?: number, waterwayCode?: number): Promise<AthleteSwimedRace[]> {
+    const raw = await V1Api.getAthleteSwimedRaces(swimmerCode, periodCode, waterwayCode);
+    return parseAthleteSwimedRaces(raw);
+  }
+
+  static async getAthleteEntries(swimmerCode: string): Promise<AthleteEntry[]> {
+    const raw = await V1Api.getAthleteEntries(swimmerCode);
+    return parseAthleteEntries(raw);
+  }
+
+  static async getAthleteRecords(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, periodCode?: number): Promise<AthleteRecordsResponse> {
+    const raw = await V1Api.getAthleteRecords(swimmerCode, waterwayCode, styleCode, distanceCode, periodCode);
+    return parseAthleteRecords(raw);
+  }
+
+  static async getAthleteBestRecord(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number): Promise<AthleteBestRecord> {
+    const raw = await V1Api.getAthleteBestRecord(swimmerCode, waterwayCode, styleCode, distanceCode);
+    return parseAthleteBestRecord(raw);
+  }
+
+  static async getAthleteGraphs(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number): Promise<AthleteGraphData> {
+    const raw = await V1Api.getAthleteGraphs(swimmerCode, waterwayCode, styleCode, distanceCode);
+    return parseAthleteGraphs(raw);
   }
 
   // --- V1 Dedicated API Wrappers (using V1Api) ---

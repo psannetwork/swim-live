@@ -368,3 +368,92 @@ export interface GameClass {
 export interface GameClassResponse {
   data: GameClass[];
 }
+
+// 新しい型定義：大会クラス情報
+export interface GameClassInfo {
+  gender: { code: number; name: string };
+  held_styles: {
+    swimming_style: { code: number; name: string };
+    held_distances: {
+      distance: { code: number; name: string; name_for_relay: string | null };
+      classes: { code: number; name: string }[];
+    }[];
+  }[];
+}
+
+export interface GameClassApiResponse {
+  data: GameClassInfo[];
+}
+
+// 新しい型定義：選手履歴
+export interface AthleteHistoryLapDetail {
+  distance: number;
+  passing_time: string;
+  rank: number;
+  lap_time: string;
+  lap_time_rank: number;
+}
+
+export interface AthleteHistory {
+  result_id: number;
+  result_time: string;
+  is_relay_first: boolean;
+  entry_group: {
+    code: string;
+    name: string;
+    short_name: string;
+    member_group: { code: number; name: string };
+  };
+  school_class: {
+    code: number;
+    name: string;
+    school_grades: number;
+  };
+  game_name: string;
+  division: { code: number; name: string };
+  ranking: number;
+  result_date: string;
+  lap_details: AthleteHistoryLapDetail[];
+}
+
+export interface AthleteHistoryResponse {
+  data: AthleteHistory[];
+  links: Links;
+  meta: MetaData;
+}
+
+// 新しい型定義：記録比較
+export interface ComparisonLapData {
+  passing_time: string;
+  gap_with_top: string;
+  lap_time: string;
+}
+
+export interface ComparisonSelectedData {
+  result_id: number;
+  result_time: string;
+  result_date: string;
+  game_name: string;
+  game_short_name: string | null;
+  division: { code: number; name: string };
+  data: {
+    base_on_50: ComparisonLapData[];
+    base_on_100: ComparisonLapData[];
+    base_on_200: ComparisonLapData[];
+  };
+}
+
+export interface ComparisonResponse {
+  race_graph: {
+    upperLimit: string;
+  };
+  lap_graph: {
+    upperLimit_50m: string;
+    upperLimit_100m: string;
+    upperLimit_200m: string;
+    lowerLimit_50m: string;
+    lowerLimit_100m: string;
+    lowerLimit_200m: string;
+  };
+  selected: ComparisonSelectedData[];
+}
