@@ -1,31 +1,36 @@
 # swim-live-scraper
 
-A library to fetch live scores and V1 data from the JASF official swim competition API, providing type-safe, normalized data structures.
+JASF公式水泳大会のライブスコアAPIおよびV1 APIからデータを取得するライブラリで、型安全で正規化されたデータ構造を提供します。
 
-## Installation
+## インストール
 
 ```bash
 npm install swim-live-scraper
 ```
 
-## Usage
+## 使用方法
 
 ```typescript
 import { SwimLiveScraper } from 'swim-live-scraper';
 
-// Example: Get normalized game list (Auto-integrates master data)
+// 例: 正規化されたゲームリストを取得（マスターデータを自動統合）
 const games = await SwimLiveScraper.getGames();
 console.log(games); 
-// Returns NormalizedGame[]: { game_name, group_name, status_label, ... }
+// NormalizedGame[]を返却: { game_name, group_name, status_label, ... }
 
-// Example: Search for V1 athletes
+// 例: V1アスリートを検索
 const athletes = await SwimLiveScraper.searchAthletes({ 
   name: '田中', 
   school_class_code: 1, 
   gender_code: 1 
 });
+
+// 例: 特定日付のレースヒートリストを取得
+const raceHeats = await SwimLiveScraper.getRaceHeatsListByGameDate('1234567', '2026-08-01');
+console.log(raceHeats);
+// NormalizedRace[]を返却: { program_id, race_name, class_name, division_name, ... }
 ```
 
-## Documentation
+## ドキュメント
 
-See [API Documentation](API.md) for more details.
+詳細については[APIドキュメント](docs/API.md)を参照してください。

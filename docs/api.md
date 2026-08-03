@@ -1,127 +1,710 @@
-# Swim-Live API Documentation
+# Swim-Live API ドキュメント
 
-This library provides a robust, type-safe, and normalized interface to access swim-live results data.
+このライブラリは、swim-live結果データにアクセスするための堅牢で型安全かつ正規化されたインターフェースを提供します。
 
-## Core Design Principles
+## 目次
 
-1.  **Robust Error Handling**: Communication errors are handled via a custom `SwimApiError` hierarchy.
-2.  **Type Safety & Normalization**:
-    - Divergent structures from Live (`LiveGame`) and V1 (`RawGame`) APIs are normalized into a unified `NormalizedGame` type.
-    - Master data (e.g., `member_groups`) is automatically integrated via `createMasterMap` for efficient O(1) attribute resolution.
-3.  **Automatic Enrichment**:開催地 (venue), ステータス (status) metadata are automatically joined via the `enrichGames` logic.
-
----
-
-## 1. SwimLiveScraper API Methods
-
-All interactions are managed through the `SwimLiveScraper` static class.
-
-### Normalized Game Data
-
-#### `getGames(): Promise<NormalizedGame[]>`
-Fetches and normalizes game data from both Live and V1 endpoints.
-
-- **Returns**: `Promise<NormalizedGame[]>`
-
-#### `getGameDetails(gameCode: string): Promise<GameDetail>`
-Fetches detailed information for a specific game.
-
-- **Arguments**:
-    - `gameCode` (string): The unique identifier for the game.
-- **Returns**: `Promise<GameDetail>`
-
-### V1 Dedicated Search Methods
-
-#### `searchGames(params: SearchGameParams): Promise<RawGame[]>`
-Direct V1 API search for games.
-
-- **Arguments**:
-    - `params` (`SearchGameParams`): Object containing search criteria (e.g., year, keyword).
-- **Returns**: `Promise<RawGame[]>`
-
-#### `searchAthletes(params: SearchAthleteParams): Promise<Athlete[]>`
-Search for athletes.
-
-- **Arguments**:
-    - `params` (`SearchAthleteParams`): Search criteria.
-- **Returns**: `Promise<Athlete[]>`
-
-### Athlete Profile Endpoints
-
-#### `getV1Athlete(athleteId: string): Promise<Athlete>`
-Fetches profile information for a specific athlete.
-
-- **Arguments**:
-    - `athleteId` (string): Unique athlete identifier.
-- **Returns**: `Promise<Athlete>`
-
-#### `getV1AthleteCareers(athleteId: string): Promise<AthleteCareer[]>`
-Fetches the career summary for an athlete.
-
-- **Arguments**:
-    - `athleteId` (string): Unique athlete identifier.
-- **Returns**: `Promise<AthleteCareer[]>`
-
-#### `getV1AthleteBestFinaPoints(athleteId: string, year?: number, waterwayCode?: number): Promise<FinaPoint[]>`
-Fetches the best FINA points for an athlete.
-
-- **Arguments**:
-    - `athleteId` (string)
-    - `year` (number, optional)
-    - `waterwayCode` (number, optional)
-- **Returns**: `Promise<FinaPoint[]>`
+1. [インストール](#インストール)
+2. [基本的な使い方](#基本的な使い方)
+3. [APIメソッド一覧](#apiメソッド一覧)
+   - [大会関連API](#大会関連api)
+   - [レース関連API](#レース関連api)
+   - [選手関連API](#選手関連api)
+   - [検索API](#検索api)
+4. [型定義](#型定義)
+5. [使用例](#使用例)
 
 ---
 
-## Appendix: API Code Mapping
+## インストール
 
-For comprehensive understanding of the API numerical codes and statuses, refer to the following mapping tables.
+```bash
+npm install swim-live-scraper
+```
 
-### 1. Race Status (`program_status` / `race_status`)
-
-| Code | Meaning | Display Text |
-| :--- | :--- | :--- |
-| 0 | Unstarted | "未開始" |
-| 1 | Startlist Published | "スタートリスト公開" |
-| 2 | In Progress | "進行中" |
-| 3 | Finished (Unconfirmed) | "終了（未確定）" |
-| 4 | Result Confirmed (Tentative) | "結果確定（暫定）" |
-| 5 | Result Confirmed (Official) | "結果確定（公式）" |
-| 8 | Data Inputting | "データ入力中" |
-| **9** | **Data Entry Completed** | **"データ登録完了"** |
-
-### 2. Publication Status (`*_pub_status`)
-
-| Code | Meaning |
-| :--- | :--- |
-| 0 | Unpublished |
-| **1** | **Published** |
-| 9 | Publishing Completed (Data Finalized) |
-
-### 3. Publication Policy (`*_publishing_setting`)
-
-| Code | Meaning |
-| :--- | :--- |
-| **1** | **Publish immediately after registration** |
-| 2 | Publish after approval |
-| 3 | Unpublished |
-
----
-
-## 4. Usage Examples
+## 基本的な使い方
 
 ```typescript
 import { SwimLiveScraper } from 'swim-live-scraper';
 
-// Example: Get normalized game list (Auto-integrates master data)
-async function fetchGames() {
-  const games = await SwimLiveScraper.getGames();
-  
-  // NormalizedGame objects are ready to use
-  games.forEach(game => {
-    console.log(`${game.game_name} - Status: ${game.status_label}`);
-  });
+// 例: 全ての大会情報を取得
+const games = await SwimLiveScraper.getGames();
+console.log(games);
+
+// 例: 特定大会の詳細情報を取得
+const gameDetails = await SwimLiveScraper.getGameDetails('1234567');
+console.log(gameDetails);
+
+// 例: 特定日のレース情報を取得
+const races = await SwimLiveScraper.getRaceListByGameDate('1234567', '2026-08-01');
+console.log(races);
+
+// 例: 選手情報を取得
+const athlete = await SwimLiveScraper.getAthleteDetails('1234567');
+console.log(athlete);
+```
+
+---
+
+## APIメソッド一覧
+
+### 大会関連API
+
+#### `getGames(): Promise<NormalizedGame[]>`
+全ての大会情報を取得します。
+
+- **戻り値**: `Promise<NormalizedGame[]>`
+- **説明**: すべての大会情報を正規化して返却します
+
+#### `getGameDetails(gameCode: string): Promise<GameDetail>`
+特定の大会の詳細情報を取得します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+- **戻り値**: `Promise<GameDetail>`
+- **説明**: 指定した大会コードの詳細情報を返却します
+
+#### `getMemberGroupGames(groupCode: number | string): Promise<NormalizedGame[]>`
+特定の団体コードに関連する大会情報を取得します。
+
+- **引数**:
+  - `groupCode` (number | string): 団体コード
+- **戻り値**: `Promise<NormalizedGame[]>`
+- **説明**: 指定した団体コードに関連する大会情報を返却します
+
+#### `getGameComprehensiveData(gameCode: string, date?: string): Promise<{ raceList: any; availableDates: any; messages: any; }>`
+大会に関する包括的なデータを取得します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+  - `date` (string, 省略可): 日付（指定しない場合は最初の日付が使用されます）
+- **戻り値**: `Promise<{ raceList: any; availableDates: any; messages: any; }>`
+- **説明**: レースリスト、利用可能な日付、メッセージを返却します
+
+#### `getInProgressCount(): Promise<any>`
+進行中の大会数を取得します。
+
+- **戻り値**: `Promise<any>`
+- **説明**: 進行中の大会数を返却します
+
+### レース関連API
+
+#### `getRaceListByGameDate(gameCode: string, date: string): Promise<NormalizedRace[]>`
+特定の大会と日付のレースリストを取得します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+  - `date` (string): 日付（YYYY-MM-DD形式）
+- **戻り値**: `Promise<NormalizedRace[]>`
+- **説明**: 指定した大会と日付のレース情報を正規化して返却します
+
+#### `getRaceHeatsListByGameDate(gameCode: string, date: string): Promise<NormalizedRace[]>`
+特定の大会と日付のレースヒートリストを取得します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+  - `date` (string): 日付（YYYY-MM-DD形式）
+- **戻り値**: `Promise<NormalizedRace[]>`
+- **説明**: 指定した大会と日付のレースヒート情報を正規化して返却します
+
+#### `getRaceStatus(gameCode: string, programId: string, heat: string): Promise<any>`
+特定のレースのステータスを取得します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+  - `programId` (string): プログラムID
+  - `heat` (string): ヒート番号
+- **戻り値**: `Promise<any>`
+- **説明**: 指定したレースのステータス情報を返却します
+
+#### `getRaceResults(gameCode: string, programId: string, heat: string): Promise<RaceResult[]>`
+特定のレースの結果を取得します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+  - `programId` (string): プログラムID
+  - `heat` (string): ヒート番号
+- **戻り値**: `Promise<RaceResult[]>`
+- **説明**: 指定したレースの結果を正規化して返却します
+
+#### `getSearchedRaces(gameCode: string, playerName?: string | null, belongName?: string | null, eventName?: string | null): Promise<any>`
+レースを検索します。
+
+- **引数**:
+  - `gameCode` (string): 大会コード
+  - `playerName` (string, 省略可): 選手名
+  - `belongName` (string, 省略可): 所属名
+  - `eventName` (string, 省略可): 種目名
+- **戻り値**: `Promise<any>`
+- **説明**: 条件に一致するレースを返却します
+
+### 選手関連API
+
+#### `getAthleteDetails(swimmerCode: string): Promise<Athlete>`
+選手の基本情報を取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+- **戻り値**: `Promise<Athlete>`
+- **説明**: 指定した選手コードの基本情報を返却します
+
+#### `getAthleteBestFinaPoints(swimmerCode: string, year?: number, waterwayCode?: number): Promise<FinaPoint[]>`
+選手の出場種目別ベスト（FINAポイント）を取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+  - `year` (number, 省略可): 年
+  - `waterwayCode` (number, 省略可): 水路コード（1: 長水路, 2: 短水路）
+- **戻り値**: `Promise<FinaPoint[]>`
+- **説明**: 指定した選手のFINAポイント情報を返却します
+
+#### `getAthleteSwimedRaces(swimmerCode: string, periodCode?: number, waterwayCode?: number): Promise<AthleteSwimedRace[]>`
+選手の泳法別・距離別成績サマリーを取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+  - `periodCode` (number, 省略可): 期間コード
+  - `waterwayCode` (number, 省略可): 水路コード（1: 長水路, 2: 短水路）
+- **戻り値**: `Promise<AthleteSwimedRace[]>`
+- **説明**: 指定した選手の泳法別・距離別成績サマリーを返却します
+
+#### `getAthleteEntries(swimmerCode: string): Promise<AthleteEntry[]>`
+選手の出場可能種目（エントリー区分）を取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+- **戻り値**: `Promise<AthleteEntry[]>`
+- **説明**: 指定した選手の出場可能種目情報を返却します
+
+#### `getAthleteRecords(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, periodCode?: number): Promise<AthleteRecordsResponse>`
+選手の種目別記録（年別）を取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+  - `waterwayCode` (number): 水路コード（1: 長水路, 2: 短水路）
+  - `styleCode` (number): 泳法コード
+  - `distanceCode` (number): 距離コード
+  - `periodCode` (number, 省略可): 期間コード
+- **戻り値**: `Promise<AthleteRecordsResponse>`
+- **説明**: 指定した選手の特定種目における年別記録を返却します
+
+#### `getAthleteBestRecord(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number): Promise<AthleteBestRecord>`
+選手の種目別ベストタイムとランキングを取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+  - `waterwayCode` (number): 水路コード（1: 長水路, 2: 短水路）
+  - `styleCode` (number): 泳法コード
+  - `distanceCode` (number): 距離コード
+- **戻り値**: `Promise<AthleteBestRecord>`
+- **説明**: 指定した選手の特定種目におけるベストタイムとランキングを返却します
+
+#### `getAthleteGraphs(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number): Promise<AthleteGraphData>`
+選手の種目別記録推移と分布グラフを取得します。
+
+- **引数**:
+  - `swimmerCode` (string): 選手コード
+  - `waterwayCode` (number): 水路コード（1: 長水路, 2: 短水路）
+  - `styleCode` (number): 泳法コード
+  - `distanceCode` (number): 距離コード
+- **戻り値**: `Promise<AthleteGraphData>`
+- **説明**: 指定した選手の特定種目における記録推移と分布グラフデータを返却します
+
+### 検索API
+
+#### `searchGames(params: SearchGameParams): Promise<GameListResponse>`
+大会を検索します。
+
+- **引数**:
+  - `params` (SearchGameParams): 検索パラメータ
+- **戻り値**: `Promise<GameListResponse>`
+- **説明**: 条件に一致する大会を検索して返却します
+
+#### `searchAthletes(params: { name?: string; member_group_name?: string; school_class_name?: string; gender_name?: string; entry_group_name?: string; page?: number; }): Promise<AthleteListResponse>`
+選手を検索します。
+
+- **引数**:
+  - `params` (object): 検索パラメータ
+    - `name` (string, 省略可): 名前
+    - `member_group_name` (string, 省略可): 団体名
+    - `school_class_name` (string, 省略可): 学年名
+    - `gender_name` (string, 省略可): 性別
+    - `entry_group_name` (string, 省略可): 登録団体名
+    - `page` (number, 省略可): ページ番号
+- **戻り値**: `Promise<AthleteListResponse>`
+- **説明**: 条件に一致する選手を検索して返却します
+
+---
+
+## 型定義
+
+### 基本型
+
+#### `NormalizedGame`
+正規化された大会情報
+
+```typescript
+interface NormalizedGame {
+  game_code: string;
+  game_name: string;
+  period: string; // 期間 (例: "08.02(日)")
+  waterway_code: number; // 数値コードを追加
+  waterway_name: string; // 変換済み水路種別
+  status_label: '開催中' | '大会終了'; // 判定済みステータス
+  group_name: string; // 変換済み地域名
+  pool_name: string | null; // プール名
+  delivery_status_code: number;
+  is_delivery_active: boolean;
+  delivery_status_label: string;
 }
 ```
 
-*Note: For debugging, `console.debug` outputs the request URLs, allowing for network monitoring.*
+#### `NormalizedRace`
+正規化されたレース情報
+
+```typescript
+interface NormalizedRace {
+  program_id: string;
+  display_program_id: string;
+  heat: string;
+  race_name: string;
+  class_name: string;
+  division_name: string;
+  status: string;
+  start_time: string | null;
+  start_list_num: number;
+
+  // 進行状態
+  is_finished: boolean;
+  has_started: boolean;
+  is_relay: boolean;
+  has_relay_members: boolean;
+  has_reaction_time: boolean;
+  has_lap_time: boolean;
+
+  // 公開設定・状態
+  startlist_pub_setting: string;
+  relay_pub_setting: string;
+  race_pub_setting: string;
+  startlist_pub_status: string;
+  relay_order_pub_status: string;
+  race_pub_status: string;
+
+  // 統計・集計カウント
+  heats_count_per_taikai: number;
+  startlist_count_per_taikai: number;
+  program_race_num: number;
+  program_race_finished_num: number;
+  program_empty_race_num: number;
+  incomplete_race_num: number;
+
+  // エラー/内部監視
+  has_reaction_time_check_err: boolean;
+  has_lap_time_check_err: boolean;
+  has_multi_incomplete_race_err: boolean;
+  has_incomplete_race_num: boolean;
+
+  // 内部判定用
+  program_status: number;
+  race_status: number;
+  alarm_status: number;
+
+  // ステージング/内部順序
+  stg_has_reaction_times: boolean;
+  stg_has_lap_times: boolean;
+  stg_max_unfinished_race_to_err: number;
+  incomplete_order: number;
+  lag_race_order: number;
+
+  // その他
+  updated_at: string;
+  game_date: string;
+}
+```
+
+#### `RaceResult`
+レース結果情報
+
+```typescript
+interface RaceResult {
+  rank: number | null;
+  lane: string | null;
+  lane_adjusted: string | null;
+  result_time: string | null;
+  reaction_time: string | null;
+  swimmer_name: string | null;
+  swimmer_code: string | null;
+  entry_group_name1: string | null;
+  entry_group_name2: string | null;
+  entry_group_name3: string | null;
+  school_name: string | null;
+  school_class: number | null;
+  school_class_code: number | null;
+  career_best_time: string | null;
+  qualifying_time: string | null;
+  qualification_level: string | null;
+  lap50: string | null;
+  lap100: string | null;
+  lap150: string | null;
+  lap200: string | null;
+  lap250: string | null;
+  lap300: string | null;
+  lap400: string | null;
+  has_reaction_time: boolean;
+  has_lap_time: boolean;
+  status_text: string | null;
+  status_name: string | null;
+}
+```
+
+### 選手関連型
+
+#### `Athlete`
+選手基本情報
+
+```typescript
+interface Athlete {
+  swimmer_name: string;
+  swimmer_code: string;
+  entry_group: {
+    code: string;
+    name: string;
+    short_name: string;
+    member_group: { code: number; name: string };
+  };
+  school_class: {
+    code: number;
+    name: string;
+    school_grades: string[];
+  };
+  gender: { code: number; name: string };
+  swimmer_name_roman: string;
+  member_group: { code: number; name: string };
+  birthday: string;
+  age: number;
+  entry_groups: {
+    code: string;
+    name: string;
+    short_name: string;
+    member_group: { code: number; name: string };
+  }[];
+  updated_at: string;
+}
+```
+
+#### `FinaPoint`
+FINAポイント情報
+
+```typescript
+interface FinaPoint {
+  distance: { code: number; name: string; name_for_relay: string | null };
+  swimming_style: { code: number; name: string };
+  fina_point: number;
+  percentage: number;
+  result_time: string;
+  result_date: string;
+  game_name: string;
+  game_short_name: string;
+  game_code: string;
+  class_code: number;
+  race_division_code: number;
+  heat: number;
+  heat_distance_code: number;
+  heat_swimming_style_code: number;
+  heat_gender_code: number;
+  ranking: number;
+  race_count: number;
+}
+```
+
+#### `AthleteSwimedRace`
+選手の泳法別・距離別成績サマリー
+
+```typescript
+interface AthleteSwimedRace {
+  swimming_style: MasterData;
+  distances: {
+    distance: MasterData;
+    fina_point: number;
+    appearances: number;
+    percentage: number;
+  }[];
+}
+```
+
+#### `AthleteEntry`
+選手の出場可能種目情報
+
+```typescript
+interface AthleteEntry {
+  distance: { code: number; name: string; name_for_relay: string | null };
+  swimming_style: MasterData;
+  waterways: Waterway[];
+  divisions: {
+    division: RaceDivision;
+    waterways: Waterway[];
+  }[];
+}
+```
+
+#### `AthleteRecordsResponse`
+選手の年別記録情報
+
+```typescript
+interface AthleteRecordsResponse {
+  upperLimit: string;
+  lowerLimit: string;
+  result: {
+    year: number;
+    data: RaceRecordData[];
+  }[];
+}
+```
+
+#### `AthleteBestRecord`
+選手のベストタイムとランキング
+
+```typescript
+interface AthleteBestRecord {
+  year: number;
+  result_time: string;
+  result_date: string;
+  fina_point: number;
+  percentage: number;
+  game_name: string;
+  game_code: string;
+  class_code: number;
+  race_division_code: number;
+  heat: number;
+  rankings: {
+    title: string;
+    ranking: number;
+    total: number;
+  }[];
+}
+```
+
+#### `AthleteGraphData`
+選手の記録推移と分布グラフ
+
+```typescript
+interface AthleteGraphData {
+  records: {
+    school_class: {
+      code: number;
+      name: string;
+      grades: number[];
+      member_group: MasterData;
+    };
+    record: {
+      record: string;
+      achieve_date: string;
+      is_new: boolean;
+    };
+  }[];
+  japan_record: {
+    record: string;
+    achieve_date: string;
+    is_new: boolean;
+  };
+  graphs: {
+    max_time: string;
+    min_time: string;
+    data: {
+      school_class: { code: number; name: string; grades: number[] };
+      total: number;
+      distributions: Distribution[];
+    }[];
+  };
+}
+```
+
+---
+
+## 使用例
+
+### 大会情報の取得と表示
+
+```typescript
+import { SwimLiveScraper } from 'swim-live-scraper';
+
+async function fetchGames() {
+  try {
+    // 全ての大会情報を取得
+    const games = await SwimLiveScraper.getGames();
+    
+    // 各大会情報を表示
+    games.forEach(game => {
+      console.log(`${game.game_name} (${game.period}) - ${game.status_label}`);
+    });
+  } catch (error) {
+    console.error('大会情報の取得に失敗しました:', error);
+  }
+}
+
+fetchGames();
+```
+
+### 特定大会のレース情報取得
+
+```typescript
+import { SwimLiveScraper } from 'swim-live-scraper';
+
+async function fetchRaceInfo(gameCode: string, date: string) {
+  try {
+    // 指定日のレース情報を取得
+    const races = await SwimLiveScraper.getRaceListByGameDate(gameCode, date);
+    
+    // レース情報を表示
+    races.forEach(race => {
+      console.log(`${race.race_name} (${race.division_name}) - ${race.status}`);
+    });
+  } catch (error) {
+    console.error('レース情報の取得に失敗しました:', error);
+  }
+}
+
+fetchRaceInfo('1234567', '2026-08-01');
+```
+
+### 選手情報の取得と分析
+
+```typescript
+import { SwimLiveScraper } from 'swim-live-scraper';
+
+async function analyzeAthlete(swimmerCode: string) {
+  try {
+    // 選手の基本情報を取得
+    const athlete = await SwimLiveScraper.getAthleteDetails(swimmerCode);
+    console.log('選手名:', athlete.swimmer_name);
+    console.log('所属:', athlete.entry_group.name);
+    
+    // 選手のFINAポイント情報を取得
+    const finaPoints = await SwimLiveScraper.getAthleteBestFinaPoints(swimmerCode, 2026, 1);
+    console.log('種目別ベスト数:', finaPoints.length);
+    
+    // 最高FINAポイントを計算
+    const maxFinaPoint = Math.max(...finaPoints.map(fp => fp.fina_point));
+    console.log('最高FINAポイント:', maxFinaPoint);
+    
+    // 選手の泳法別成績を取得
+    const swimedRaces = await SwimLiveScraper.getAthleteSwimedRaces(swimmerCode, 1, 1);
+    console.log('泳法数:', swimedRaces.length);
+    
+    swimedRaces.forEach(style => {
+      console.log(`${style.swimming_style.name}: ${style.distances.length}種目`);
+    });
+  } catch (error) {
+    console.error('選手情報の取得に失敗しました:', error);
+  }
+}
+
+analyzeAthlete('1234567');
+```
+
+### 大会結果のCSV出力
+
+```typescript
+import { SwimLiveScraper } from 'swim-live-scraper';
+
+async function exportRaceResultsToCSV(gameCode: string, programId: string, heat: string, filename: string) {
+  try {
+    // レース結果を取得
+    const results = await SwimLiveScraper.getRaceResults(gameCode, programId, heat);
+    
+    // CSV形式で出力
+    SwimLiveScraper.exportToCSV(results, filename);
+    console.log(`${filename} に出力しました`);
+  } catch (error) {
+    console.error('レース結果の出力に失敗しました:', error);
+  }
+}
+
+exportRaceResultsToCSV('1234567', '1', '1', 'race_results.csv');
+```
+
+### 選手の種目別記録推移の取得
+
+```typescript
+import { SwimLiveScraper } from 'swim-live-scraper';
+
+async function getAthletePerformanceTrend(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number) {
+  try {
+    // ベスト記録情報を取得
+    const bestRecord = await SwimLiveScraper.getAthleteBestRecord(swimmerCode, waterwayCode, styleCode, distanceCode);
+    console.log('ベストタイム:', bestRecord.result_time);
+    console.log('記録日:', bestRecord.result_date);
+    
+    // 記録推移グラフ情報を取得
+    const graphData = await SwimLiveScraper.getAthleteGraphs(swimmerCode, waterwayCode, styleCode, distanceCode);
+    console.log('記録推移数:', graphData.records.length);
+    console.log('日本記録:', graphData.japan_record.record);
+    
+    // 各学年の記録を表示
+    graphData.records.forEach(record => {
+      console.log(`${record.school_class.name}: ${record.record.record} (${record.record.achieve_date})`);
+    });
+  } catch (error) {
+    console.error('選手記録の取得に失敗しました:', error);
+  }
+}
+
+// 50m自由形（水路コード1、泳法コード1、距離コード2）の記録を取得
+getAthletePerformanceTrend('1234567', 1, 1, 2);
+```
+
+---
+
+## 便利なマッピング情報
+
+### 水路コードマッピング
+
+| コード | 名前 |
+|--------|------|
+| 1 | 長水路 |
+| 2 | 短水路 |
+| 3 | 室内短水路 |
+
+### 泳法コードマッピング
+
+| コード | 名前 |
+|--------|------|
+| 1 | 自由形 |
+| 2 | 背泳ぎ |
+| 3 | 平泳ぎ |
+| 4 | バタフライ |
+| 5 | 個人メドレー |
+| 6 | フリーリレー |
+| 7 | メドレーリレー |
+
+### 距離コードマッピング
+
+| コード | 名前 |
+|--------|------|
+| 1 | 25m |
+| 2 | 50m |
+| 3 | 100m |
+| 4 | 200m |
+| 5 | 400m |
+| 6 | 800m |
+| 7 | 1500m |
+
+### 性別コードマッピング
+
+| コード | 名前 |
+|--------|------|
+| 1 | 男子 |
+| 2 | 女子 |
+| 3 | 混合 |
+
+### 区分コードマッピング
+
+| コード | 名前 |
+|--------|------|
+| 1 | 予選 |
+| 2 | 準決勝 |
+| 3 | タイム決勝 |
+| 4 | 決勝 |
+| 5 | B決勝 |
+
+このドキュメントは随時更新されます。
