@@ -257,9 +257,9 @@ export function normalizeGame(data: RawGame, groupMap: Record<number, string>): 
     status_label: new Date(data.end_date) < now ? '大会終了' : '開催中',
     group_name: groupMap[data.group.code ?? 0] || '不明',
     pool_name: data.pool,
-    delivery_status_code: data.delivery_status_code,
-    is_delivery_active: data.delivery_status_code === 2,
-    delivery_status_label: getDeliveryStatusLabel(data.delivery_status_code)
+    delivery_status_code: data.delivery_status,
+    is_delivery_active: data.delivery_status === 2,
+    delivery_status_label: getDeliveryStatusLabel(data.delivery_status)
   };
 }
 
@@ -331,7 +331,7 @@ export function parseFinaPoints(data: any[]): FinaPoint[] {
 export function parseAthleteSwimedRaces(data: any[]): AthleteSwimedRace[] {
   return data.map(item => ({
     swimming_style: item.swimming_style,
-    distances: item.distances.map(distanceItem => ({
+    distances: item.distances.map((distanceItem: any) => ({
       distance: distanceItem.distance,
       fina_point: distanceItem.fina_point,
       appearances: distanceItem.appearances,
@@ -353,9 +353,9 @@ export function parseAthleteRecords(data: any): AthleteRecordsResponse {
   return {
     upperLimit: data.upperLimit,
     lowerLimit: data.lowerLimit,
-    result: data.result.map(yearData => ({
+    result: data.result.map((yearData: any) => ({
       year: yearData.year,
-      data: yearData.data.map(recordData => ({
+      data: yearData.data.map((recordData: any) => ({
         result_id: recordData.result_id,
         result_time: recordData.result_time,
         game_name: recordData.game_name,
@@ -379,7 +379,7 @@ export function parseAthleteBestRecord(data: any): AthleteBestRecord {
     class_code: data.class_code,
     race_division_code: data.race_division_code,
     heat: data.heat,
-    rankings: data.rankings.map(ranking => ({
+    rankings: data.rankings.map((ranking: any) => ({
       title: ranking.title,
       ranking: ranking.ranking,
       total: ranking.total,
@@ -389,7 +389,7 @@ export function parseAthleteBestRecord(data: any): AthleteBestRecord {
 
 export function parseAthleteGraphs(data: any): AthleteGraphData {
   return {
-    records: data.records.map(record => ({
+    records: data.records.map((record: any) => ({
       school_class: {
         code: record.school_class.code,
         name: record.school_class.name,
@@ -406,11 +406,11 @@ export function parseAthleteGraphs(data: any): AthleteGraphData {
 // --- 新しいパーサー関数 ---
 export function parseGameClassInfo(data: any): GameClassApiResponse {
   return {
-    data: data.data.map(item => ({
+    data: data.data.map((item: any) => ({
       gender: item.gender,
-      held_styles: item.held_styles.map(style => ({
+      held_styles: item.held_styles.map((style: any) => ({
         swimming_style: style.swimming_style,
-        held_distances: style.held_distances.map(distance => ({
+        held_distances: style.held_distances.map((distance: any) => ({
           distance: distance.distance,
           classes: distance.classes,
         })),
@@ -421,7 +421,7 @@ export function parseGameClassInfo(data: any): GameClassApiResponse {
 
 export function parseAthleteHistory(data: any): AthleteHistoryResponse {
   return {
-    data: data.data.map(item => ({
+    data: data.data.map((item: any) => ({
       result_id: item.result_id,
       result_time: item.result_time,
       is_relay_first: item.is_relay_first,
@@ -431,7 +431,7 @@ export function parseAthleteHistory(data: any): AthleteHistoryResponse {
       division: item.division,
       ranking: item.ranking,
       result_date: item.result_date,
-      lap_details: item.lap_details.map(lap => ({
+      lap_details: item.lap_details.map((lap: any) => ({
         distance: lap.distance,
         passing_time: lap.passing_time,
         rank: lap.rank,
@@ -448,7 +448,7 @@ export function parseComparisonData(data: any): ComparisonResponse {
   return {
     race_graph: data.race_graph,
     lap_graph: data.lap_graph,
-    selected: data.selected.map(item => ({
+    selected: data.selected.map((item: any) => ({
       result_id: item.result_id,
       result_time: item.result_time,
       result_date: item.result_date,
