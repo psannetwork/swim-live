@@ -203,6 +203,17 @@ export class SwimLiveScraper {
         return apiId.toString();
     }
 
+    // API IDを選手コードに変換するヘルパー関数
+    static apiIdToSwimmerCode(apiId: string): string {
+        const e = parseInt(apiId, 10);
+        if (isNaN(e)) {
+            throw new Error(`Invalid api ID: ${apiId}`);
+        }
+        // 反転計算: (apiId - 3) / 3 - 10000000
+        const swimmerCode = (e - 3) / 3 - 10000000;
+        return swimmerCode.toString();
+    }
+
   // CSV
   static exportToCSV(data: any[], filename: string): void {
     if (!data || data.length === 0) {

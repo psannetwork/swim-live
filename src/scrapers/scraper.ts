@@ -8,7 +8,6 @@ const client = axios.create({
 
 export async function fetchJson<T = any>(url: string): Promise<T> {
   try {
-    console.debug(`[DEBUG] Fetching: ${url}`);
     const res = await client.get(url);
     
     // Check for rate limiting
