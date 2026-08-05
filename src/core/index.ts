@@ -142,6 +142,14 @@ export class SwimLiveScraper {
     return await LiveApi.getSearchedRaces(gameCode, params);
   }
 
+  static async findAthleteAcrossGamesById(swimmerCode: string, eventName?: string): Promise<any[]> {
+    const athlete = await this.getAthleteDetails(swimmerCode);
+    const playerName = athlete.swimmer_name;
+    const belongName = athlete.member_group.name;
+    console.log(`Resolved athlete: ${playerName} (${belongName}) for ID: ${swimmerCode}`);
+    return await this.searchAthleteAcrossGames(playerName, belongName, eventName);
+  }
+
   static async searchAthleteAcrossGames(
     playerName: string, 
     belongName?: string, 

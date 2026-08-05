@@ -90,6 +90,15 @@ V1 APIを使用して大会を検索します。
     - `eventName` (string, オプション): 種目名
 - **戻り値**: `Promise<any[]>`（見つかったレース情報の配列）
 
+#### `findAthleteAcrossGamesById(swimmerCode: string, eventName?: string): Promise<any[]>`
+全開催大会を横断して、選手IDから参加種目を検索します。内部で選手情報を解決して精度を高めます。
+
+- **引数**:
+    - `swimmerCode` (string): 選手ID（コード）
+    - `eventName` (string, オプション): 種目名
+- **戻り値**: `Promise<any[]>`（見つかったレース情報の配列）
+
+
 ---
 
 ### マスタデータ取得メソッド
