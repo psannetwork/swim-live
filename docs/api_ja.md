@@ -81,9 +81,31 @@ V1 APIを使用して大会を検索します。
     - `raceStatus` (`RaceStatus`, オプション): データの種類（`RaceStatus.RESULT` または `RaceStatus.IN_PROGRESS`）。デフォルトは `RaceStatus.RESULT`。
 - **戻り値**: `Promise<any>`（取得した生データ）
 
+#### `searchAthleteAcrossGames(playerName: string, belongName?: string, eventName?: string): Promise<any[]>`
+全開催大会を横断して、選手名から参加種目を検索します。
+
+- **引数**:
+    - `playerName` (string): 選手名
+    - `belongName` (string, オプション): 所属名
+    - `eventName` (string, オプション): 種目名
+- **戻り値**: `Promise<any[]>`（見つかったレース情報の配列）
+
 ---
 
-### API で使用する Enum
+### マスタデータ取得メソッド
+
+#### `getMastersEvents(): Promise<MasterData[]>`
+種目マスタデータを取得します。
+
+- **戻り値**: `Promise<MasterData[]>`
+
+#### `getMastersRaceDivisions(): Promise<MasterData[]>`
+レース区分マスタデータを取得します。
+
+- **戻り値**: `Promise<MasterData[]>`
+
+---
+
 
 #### `RaceStatus`
 レース結果取得時に指定するデータの状態です。

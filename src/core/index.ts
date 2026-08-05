@@ -142,6 +142,31 @@ export class SwimLiveScraper {
     return await LiveApi.getSearchedRaces(gameCode, params);
   }
 
+  static async searchAthleteAcrossGames(
+    playerName: string, 
+    belongName?: string, 
+    eventName?: string
+  ): Promise<any[]> {
+    const games = await this.getGames();
+    const results: any[] = [];
+    
+    console.log(`Searching for athlete: ${playerName} in ${games.length} games...`);
+
+    for (const game of games) {
+      try {
+        const found = await this.getSearchedRaces(game.game_code, playerName, belongName || null, eventName || null);
+        if (Array.isArray(found) && found.length > 0) {
+          console.log(`Found ${found.length} races for ${playerName} in ${game.game_name}`);
+          results.push(...found);
+        }
+      } catch (e) {
+        console.warn(`Failed to search in ${game.game_name}: ${e}`);
+      }
+    }
+    
+    return results;
+  }
+
   static async getGames(): Promise<NormalizedGame[]> {
     const games = await LiveApi.getGames();
     return Array.isArray(games) ? await this.enrichGames(games) : [];
@@ -191,6 +216,10 @@ export class SwimLiveScraper {
   static async getGameClassInfo(gameCode: string): Promise<GameClassApiResponse> {
     const raw = await V1Api.getGameClassInfo(gameCode);
     return parseGameClassInfo(raw);
+  }
+
+  static async getMastersEvents(): Promise<MasterData[]> {
+    return await LiveApi.getMastersEvents();
   }
 
   static async getMastersRaceDivisions(): Promise<MasterData[]> {

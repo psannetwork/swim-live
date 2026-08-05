@@ -25,6 +25,7 @@ export const LiveApi = {
     getInProgressCount: async () => await fetchJson(`${BASE_URL}/games/in_progress_count`),
     getMemberGroupGames: async (groupCode: number | string) => await fetchJson<any[]>(`${BASE_URL}/games/member_group/${groupCode}`),
     getMastersMemberGroups: async () => await fetchJson(`${BASE_URL}/masters/member_groups`),
+    getMastersEvents: async () => await fetchJson(`${BASE_URL}/masters/events`),
     getRaceMessages: async (gameCode: string) => await fetchJson(`${BASE_URL}/race_heats/messages/${gameCode}`),
     getNextRace: async (gameCode: string, programId: string, heat: string, raceDate: string) => 
         await fetchJson(`${BASE_URL}/race_heats/next?game_code=${gameCode}&program_id=${programId}&heat=${heat}&race_date=${raceDate}`),
