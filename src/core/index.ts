@@ -3,7 +3,8 @@ import { Parser } from 'json2csv';
 import { LiveApi } from '../apis/live_api';
 import { V1Api } from '../apis/v1_api';
 import { parseRaceResults, normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseAthlete, parseFinaPoints, parseAthleteSwimedRaces, parseAthleteEntries, parseAthleteRecords, parseAthleteBestRecord, parseAthleteGraphs, parseGameClassInfo, parseAthleteHistory, parseComparisonData, normalizeRaceHeatsList } from '../parsers/parser';
-import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, NormalizedRace, GameDetail, NormalizedGame, RaceResult, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse, MasterData } from '../types/types';
+import { Game, Athlete, FinaPoint, GameListResponse, Announcement, AthleteListResponse, SearchGameParams, NormalizedRace, GameDetail, NormalizedGame, RaceResult, AthleteSwimedRace, AthleteEntry, AthleteRecordsResponse, AthleteBestRecord, AthleteGraphData, GameClassApiResponse, AthleteHistoryResponse, ComparisonResponse, MasterData, RaceStatus } from '../types/types';
+import { SimpleCache } from '../utils';
 
 export { createMasterMap };
 
@@ -11,6 +12,54 @@ export class SwimLiveScraper {
   private static memberGroupsCache: any[] | null = null;
   private static schoolClassesCache: any[] | null = null;
   private static gendersCache: any[] | null = null;
+
+  // 新しい探索用メソッド
+  static async findAthleteParticipation(swimmerCode: string): Promise<any[]> {
+    const games = await this.getGames();
+    const activeGames = games.filter(g => g.status_label === '開催中');
+    const results: any[] = [];
+
+    for (const game of activeGames) {
+      const cacheKey = `dates_${game.game_code}`;
+      let dates = SimpleCache.get(cacheKey);
+      if (!dates) {
+        dates = await LiveApi.getSelectDateList(game.game_code);
+        SimpleCache.set(cacheKey, dates, 600000); // 10分キャッシュ
+      }
+      if (!Array.isArray(dates)) continue;
+
+      for (const dateObj of dates) {
+        const date = dateObj.race_date;
+        const raceCacheKey = `races_${game.game_code}_${date}`;
+        let races = SimpleCache.get(raceCacheKey);
+        if (!races) {
+          races = await this.getRaceListByGameDate(game.game_code, date);
+          SimpleCache.set(raceCacheKey, races, 600000);
+        }
+        
+        for (const race of races) {
+          const resultCacheKey = `results_${game.game_code}_${race.program_id}_${race.heat}`;
+          let participants = SimpleCache.get(resultCacheKey);
+          if (!participants) {
+             // 結果が未確定の可能性もあるため、進行中データも含めて取得する必要があるかもしれない。
+             // ひとまずRESULTで取得する。
+            participants = await this.getRaceResults(game.game_code, race.program_id, race.heat);
+            SimpleCache.set(resultCacheKey, participants, 60000); // 1分キャッシュ
+          }
+          const found = participants.find((p: any) => p.swimmer_code === swimmerCode);
+          if (found) {
+            results.push({
+              game_code: game.game_code,
+              game_name: game.game_name,
+              ...race,
+              ...found
+            });
+          }
+        }
+      }
+    }
+    return results;
+  }
 
   private static async getCachedMemberGroups(): Promise<any[]> {
     if (!this.memberGroupsCache) {
