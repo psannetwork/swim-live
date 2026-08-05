@@ -466,6 +466,7 @@ export interface ComparisonSelectedData {
 }
 
 export enum RaceStatus {
+  BEFORE_START = 0,
   IN_PROGRESS = 1,
   RESULT = 9,
 }
