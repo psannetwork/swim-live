@@ -71,9 +71,28 @@ V1 APIを使用して大会を検索します。
     - `waterwayCode` (number, オプション)
 - **戻り値**: `Promise<FinaPoint[]>`
 
+#### `getRaceResults(gameCode: string, programId: string, heat: string, raceStatus: RaceStatus = RaceStatus.RESULT): Promise<any>`
+特定大会の特定種目の結果を取得します。
+
+- **引数**:
+    - `gameCode` (string): 大会コード
+    - `programId` (string): プログラムID（種目）
+    - `heat` (string): 組番号
+    - `raceStatus` (`RaceStatus`, オプション): データの種類（`RaceStatus.RESULT` または `RaceStatus.IN_PROGRESS`）。デフォルトは `RaceStatus.RESULT`。
+- **戻り値**: `Promise<any>`（取得した生データ）
+
 ---
 
-### 注意点: IDの違い
+### API で使用する Enum
+
+#### `RaceStatus`
+レース結果取得時に指定するデータの状態です。
+
+- `RaceStatus.RESULT` (= 9): 確定したレース結果
+- `RaceStatus.IN_PROGRESS` (= 1): レース進行中のデータ
+
+---
+
 
 - `raceResults`から得られる`swimmer_code`は、APIのエンドポイントで使用するID（`athleteId`）とは異なる場合があります。
 - `searchAthletes`メソッドの`params`オブジェクトに`code`パラメータを指定して、`swimmer_code`を検索条件として使用できます。

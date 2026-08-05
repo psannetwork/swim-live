@@ -1,6 +1,6 @@
 import { fetchJson } from '../scrapers/scraper';
 import { normalizeRaceList, normalizeGameDetail, normalizeLiveGame, createMasterMap, parseRaceResults } from '../parsers/parser';
-import { NormalizedRace, GameDetail, NormalizedGame, RaceResult } from '../types/types';
+import { NormalizedRace, GameDetail, NormalizedGame, RaceResult, RaceStatus } from '../types/types';
 
 const BASE_URL = 'https://live-results.swim.or.jp/api';
 
@@ -14,8 +14,8 @@ export const LiveApi = {
     getRaceStatus: async (gameCode: string, programId: string, heat: string): Promise<any> => 
         await fetchJson(`${BASE_URL}/race_heats/race?game_code=${gameCode}&program_id=${programId}&heat=${heat}`),
         
-    getRaceResults: async (gameCode: string, programId: string, heat: string): Promise<any> => 
-        await fetchJson(`${BASE_URL}/result/race?game_code=${gameCode}&program_id=${programId}&heat=${heat}&raceStatus=9`),
+    getRaceResults: async (gameCode: string, programId: string, heat: string, raceStatus: RaceStatus = RaceStatus.RESULT): Promise<any> => 
+        await fetchJson(`${BASE_URL}/result/race?game_code=${gameCode}&program_id=${programId}&heat=${heat}&raceStatus=${raceStatus}`),
         
     getSearchedRaces: async (gameCode: string, params: Record<string, string>): Promise<any> => {
         const query = new URLSearchParams(params).toString();

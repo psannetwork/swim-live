@@ -22,6 +22,28 @@ export interface RaceResult {
   lap250: string | null;
   lap300: string | null;
   lap400: string | null;
+  lap450: string | null;
+  lap500: string | null;
+  lap550: string | null;
+  lap600: string | null;
+  lap650: string | null;
+  lap700: string | null;
+  lap750: string | null;
+  lap800: string | null;
+  lap850: string | null;
+  lap900: string | null;
+  lap950: string | null;
+  lap1000: string | null;
+  lap1050: string | null;
+  lap1100: string | null;
+  lap1150: string | null;
+  lap1200: string | null;
+  lap1250: string | null;
+  lap1300: string | null;
+  lap1350: string | null;
+  lap1400: string | null;
+  lap1450: string | null;
+  lap1500: string | null;
   has_reaction_time: boolean;
   has_lap_time: boolean;
   status_text: string | null;
@@ -441,6 +463,11 @@ export interface ComparisonSelectedData {
     base_on_100: ComparisonLapData[];
     base_on_200: ComparisonLapData[];
   };
+}
+
+export enum RaceStatus {
+  IN_PROGRESS = 1,
+  RESULT = 9,
 }
 
 export interface ComparisonResponse {
