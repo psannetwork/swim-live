@@ -1,6 +1,6 @@
 {
   "name": "swim-live-scraper",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "JASF公式水泳大会のライブスコアAPIからデータを取得するライブラリ",
   "main": "dist/core/index.js",
   "types": "dist/core/index.d.ts",
