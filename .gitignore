@@ -9,3 +9,6 @@ package-lock.json
 *.csv
 example*.log
 *.log
+
+demo/
+example/
