@@ -186,37 +186,44 @@ export class SwimLiveScraper {
 
   // --- Athlete Data API Methods (using V1Api) ---
   static async getAthleteDetails(swimmerCode: string): Promise<Athlete> {
-    const raw = await V1Api.getAthlete(swimmerCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthlete(apiId);
     return parseAthlete(raw);
   }
 
   static async getAthleteBestFinaPoints(swimmerCode: string, year?: number, waterwayCode?: number): Promise<FinaPoint[]> {
-    const raw = await V1Api.getAthleteBestFinaPoints(swimmerCode, year, waterwayCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteBestFinaPoints(apiId, year, waterwayCode);
     return parseFinaPoints(raw);
   }
 
   static async getAthleteSwimedRaces(swimmerCode: string, periodCode?: number, waterwayCode?: number): Promise<AthleteSwimedRace[]> {
-    const raw = await V1Api.getAthleteSwimedRaces(swimmerCode, periodCode, waterwayCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteSwimedRaces(apiId, periodCode, waterwayCode);
     return parseAthleteSwimedRaces(raw);
   }
 
   static async getAthleteEntries(swimmerCode: string): Promise<AthleteEntry[]> {
-    const raw = await V1Api.getAthleteEntries(swimmerCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteEntries(apiId);
     return parseAthleteEntries(raw);
   }
 
   static async getAthleteRecords(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, periodCode?: number): Promise<AthleteRecordsResponse> {
-    const raw = await V1Api.getAthleteRecords(swimmerCode, waterwayCode, styleCode, distanceCode, periodCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteRecords(apiId, waterwayCode, styleCode, distanceCode, periodCode);
     return parseAthleteRecords(raw);
   }
 
   static async getAthleteBestRecord(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number): Promise<AthleteBestRecord> {
-    const raw = await V1Api.getAthleteBestRecord(swimmerCode, waterwayCode, styleCode, distanceCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteBestRecord(apiId, waterwayCode, styleCode, distanceCode);
     return parseAthleteBestRecord(raw);
   }
 
   static async getAthleteGraphs(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number): Promise<AthleteGraphData> {
-    const raw = await V1Api.getAthleteGraphs(swimmerCode, waterwayCode, styleCode, distanceCode);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteGraphs(apiId, waterwayCode, styleCode, distanceCode);
     return parseAthleteGraphs(raw);
   }
 
@@ -235,12 +242,14 @@ export class SwimLiveScraper {
   }
 
   static async getAthleteHistory(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, divisionCode: number, params?: { period_code?: number; game_category_codes?: number[]; page?: number; per_page?: number }): Promise<AthleteHistoryResponse> {
-    const raw = await V1Api.getAthleteHistory(swimmerCode, waterwayCode, styleCode, distanceCode, divisionCode, params);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteHistory(apiId, waterwayCode, styleCode, distanceCode, divisionCode, params);
     return parseAthleteHistory(raw);
   }
 
   static async getAthleteComparison(swimmerCode: string, waterwayCode: number, styleCode: number, distanceCode: number, divisionCode: number, resultIds: number[]): Promise<ComparisonResponse> {
-    const raw = await V1Api.getAthleteComparison(swimmerCode, waterwayCode, styleCode, distanceCode, divisionCode, resultIds);
+    const apiId = this.swimmerCodeToApiId(swimmerCode);
+    const raw = await V1Api.getAthleteComparison(apiId, waterwayCode, styleCode, distanceCode, divisionCode, resultIds);
     return parseComparisonData(raw);
   }
 
