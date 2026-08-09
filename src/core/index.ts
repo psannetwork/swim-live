@@ -165,7 +165,11 @@ export class SwimLiveScraper {
         const found = await this.getSearchedRaces(game.game_code, playerName, belongName || null, eventName || null);
         if (Array.isArray(found) && found.length > 0) {
           console.log(`Found ${found.length} races for ${playerName} in ${game.game_name}`);
-          results.push(...found);
+          results.push(...found.map(r => ({
+            ...r,
+            heat: r.heat,
+            lane: r.lane
+          })));
         }
       } catch (e) {
         console.warn(`Failed to search in ${game.game_name}: ${e}`);
