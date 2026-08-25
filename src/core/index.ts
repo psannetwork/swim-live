@@ -285,10 +285,7 @@ export class SwimLiveScraper {
         const gender = genders.find(g => g.gender_name === params.gender_name);
 
         return await V1Api.searchAthletes(
-            params,
-            (memberGroup && memberGroup.code !== null) ? memberGroup.code : 99,
-            (schoolClass && schoolClass.code !== null) ? schoolClass.code : 99,
-            (gender && gender.code !== null) ? gender.code : 99
+            params
         );
     }
 

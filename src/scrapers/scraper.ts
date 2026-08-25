@@ -4,6 +4,9 @@ import { SwimApiError, SwimNetworkError, SwimRateLimitError } from '../errors/er
 
 const client = axios.create({
   timeout: 10000, // 10 seconds timeout
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+  }
 });
 
 export async function fetchJson<T = any>(url: string): Promise<T> {

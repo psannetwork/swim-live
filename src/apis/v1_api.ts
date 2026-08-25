@@ -108,10 +108,10 @@ export const V1Api = {
         return fetchJson<GameListResponse>(buildUrl('games', defaultParams as Record<string, string | number>));
     },
     
-    searchAthletes: (params: Record<string, any>, memberGroupCode: number, schoolClassCode: number, genderCode: number) => {
+    searchAthletes: (params: Record<string, any>, memberGroupCode: number = 99, schoolClassCode: number = 99, genderCode: number = 99) => {
         const apiParams: Record<string, string | number> = {
             page: params.page || 1,
-            official_code: 1,
+            // official_code: 1, // Removed
             name: params.name || '',
             entry_group_name: params.entry_group_name || '',
             member_group_code: memberGroupCode,
